@@ -112,8 +112,6 @@ flowchart TD
 ```
 
 ### 유즈 케이스
-```markdown
 ![Use Case Diagram](C:/Users/Linverno/Downloads/concert_drawio.png)
-```
 
 
