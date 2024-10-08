@@ -10,10 +10,9 @@ sequenceDiagram
     User ->> ReservationService: 예약 가능 날짜 조회 요청
     ReservationService ->> User: 예약 가능 날짜 목록 반환
     
+    User ->> ReservationService: 예약 가능 좌석 조회 요청
     User ->> TokenService: 토큰 발급 요청
     TokenService ->> User: 토큰 발급 및 대기열 정보 반환
-
-    User ->> ReservationService: 예약 가능 좌석 조회 요청
     ReservationService ->> User: 예약 가능 좌석 정보 반환
 
     User ->> ReservationService: 좌석 예약 요청 (토큰 포함)
