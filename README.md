@@ -9,13 +9,14 @@ sequenceDiagram
 
     User ->> ReservationService: 예약 가능 날짜 조회 요청
     ReservationService ->> User: 예약 가능 날짜 목록 반환
+    
+    User ->> TokenService: 토큰 발급 요청
+    TokenService ->> User: 토큰 발급 및 대기열 정보 반환
 
     User ->> ReservationService: 예약 가능 좌석 조회 요청
     ReservationService ->> User: 예약 가능 좌석 정보 반환
 
     User ->> ReservationService: 좌석 예약 요청 (토큰 포함)
-    User ->> TokenService: 토큰 발급 요청
-    TokenService ->> User: 토큰 발급 및 대기열 정보 반환
     
     ReservationService ->> ReservationService: 좌석 임시 배정 (타이머 시작)
     ReservationService ->> User: 좌석 예약 확인 응답
@@ -54,10 +55,10 @@ classDiagram
 ### 플로추차트
 ```mermaid
 flowchart TD
-    A[서비스 시작] --> B[유저 토큰 발급 요청]
-    B --> C{대기열 검증}
-    C -->|성공| D[예약 가능 날짜 조회]
-    D --> E[예약 가능 좌석 조회]
+    A[서비스 시작] --> B[예약 가능 날짜 조회]
+    B --> C[유저 토큰 발급 요청]
+    C --> D{대기열 검증}
+    D -->|성공| E[예약 가능 좌석 조회]
     E --> F[좌석 예약 요청]
     F --> G{잔액 확인}
     G -->|충전 필요| H[잔액 충전 요청]
