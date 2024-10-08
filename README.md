@@ -5,7 +5,7 @@ sequenceDiagram
     participant TokenService
     participant ReservationService
     participant PaymentService
-    participant BalanceService
+    participant PayService
 
     User ->> ReservationService: 예약 가능 날짜 조회 요청
     ReservationService ->> User: 예약 가능 날짜 목록 반환
@@ -20,12 +20,12 @@ sequenceDiagram
     ReservationService ->> ReservationService: 좌석 임시 배정 (타이머 시작)
     ReservationService ->> User: 좌석 예약 확인 응답
 
-    User ->> BalanceService: 잔액 조회 요청
-    BalanceService ->> User: 잔액 반환
+    User ->> PayService: 잔액 조회 요청
+    PayService ->> User: 잔액 반환
 
     User ->> PaymentService: 결제 요청 (잔액 확인, 토큰 포함)
-    PaymentService ->> BalanceService: 잔액 차감 요청
-    BalanceService ->> PaymentService: 잔액 차감 확인
+    PaymentService ->> PayService: 잔액 차감 요청
+    PayService ->> PaymentService: 잔액 차감 확인
     PaymentService ->> ReservationService: 좌석 최종 배정 요청
     ReservationService ->> PaymentService: 좌석 배정 완료
     PaymentService ->> User: 결제 완료 응답
