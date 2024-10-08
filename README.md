@@ -36,39 +36,18 @@ sequenceDiagram
 ```mermaid
 classDiagram
     class User {
-        UUID userId
-        String name
-        double balance
     }
     
     class Token {
-        UUID tokenId
-        UUID userId
-        DateTime issuedAt
-        int queuePosition
-        DateTime expirationTime
     }
     
     class Reservation {
-        UUID reservationId
-        UUID userId
-        int seatNumber
-        Date reservationDate
-        DateTime expirationTime
-        Boolean isTemporary
     }
     
     class Payment {
-        UUID paymentId
-        UUID userId
-        UUID reservationId
-        double amount
-        DateTime paymentTime
     }
     
     class Seat {
-        int seatNumber
-        Boolean isAvailable
     }
 
     User "1" --> "0..*" Token
