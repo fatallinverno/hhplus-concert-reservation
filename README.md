@@ -61,6 +61,19 @@ sequenceDiagram
     ReservationService ->> User: 예약 가능 날짜 목록 반환
 ```
 
+### 예약 가능 좌석 조회 시퀀스 다이어그램
+```mermaid
+sequenceDiagram
+    participant User
+    participant ReservationService
+    participant Database
+    
+    User ->> ReservationService: 예약 가능 좌석 조회 요청 (날짜 포함)
+    ReservationService ->> Database: 해당 날짜의 좌석 데이터 요청
+    Database ->> ReservationService: 좌석 상태 데이터 반환
+    ReservationService ->> User: 예약 가능 좌석 목록 반환
+```
+
 ### 좌석 예약 요청 시퀀스 다이어그램
 ```mermaid
 sequenceDiagram
@@ -75,19 +88,6 @@ sequenceDiagram
     ReservationService ->> Database: 좌석 상태 확인 및 임시 예약 처리
     Database ->> ReservationService: 임시 예약 성공 여부 반환
     ReservationService ->> User: 임시 예약 성공 응답 및 타이머 시작 (예: 5분)
-```
-
-### 예약 가능 좌석 조회 시퀀스 다이어그램
-```mermaid
-sequenceDiagram
-    participant User
-    participant ReservationService
-    participant Database
-    
-    User ->> ReservationService: 예약 가능 좌석 조회 요청 (날짜 포함)
-    ReservationService ->> Database: 해당 날짜의 좌석 데이터 요청
-    Database ->> ReservationService: 좌석 상태 데이터 반환
-    ReservationService ->> User: 예약 가능 좌석 목록 반환
 ```
 
 ### 잔액 조회 시퀀스 다이어그램
@@ -209,15 +209,15 @@ classDiagram
 ### 플로우 차트
 ```mermaid
 flowchart TD
-    A[서비스 시작] --> B[예약 가능 날짜 조회]
-    B --> C[유저 토큰 발급 요청]
-    C --> D{대기열 검증}
-    D -->|성공| E[예약 가능 좌석 조회]
+    A[서비스 시작] --> B[유저 토큰 발급 요청]
+    B --> C[예약 가능 날짜 조회]
+    C -->|성공| D[예약 가능 좌석 조회]
+    D --> E{대기열 검증}
     E --> F[좌석 예약 요청]
-    F --> G{잔액 확인}
+    F --> G{좌석 임시 배정 여부}
+    I --> J{잔액 확인}
     G -->|충전 필요| H[잔액 충전 요청]
     G -->|충분함| I[결제 요청]
-    I --> J{좌석 임시 배정 여부}
     J -->|임시 배정 성공| K[좌석 최종 배정]
     K --> L[결제 완료]
     L --> M[토큰 만료 처리]
@@ -225,7 +225,7 @@ flowchart TD
     
     G -->|잔액 부족| H
     H --> I
-    J -->|임시 배정 실패| X[예약 실패]
+    G -->|임시 배정 실패| X[예약 실패]
     L -->|결제 실패| X
 ```
 
