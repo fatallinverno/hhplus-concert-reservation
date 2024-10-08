@@ -10,12 +10,12 @@ sequenceDiagram
     participant PayService
     participant PayHistoryService
 
+    User ->> TokenService: 토큰 발급 요청
     User ->> ReservationService: 예약 가능 날짜 조회 요청
     ReservationService ->> User: 예약 가능 날짜 목록 반환
     
     User ->> ReservationService: 예약 가능 좌석 조회 요청
-    User ->> TokenService: 토큰 발급 요청
-    TokenService ->> User: 토큰 발급 및 대기열 정보 반환
+    TokenService ->> User: 토큰 검증 후 대기열 정보 반환
     ReservationService ->> User: 예약 가능 좌석 정보 반환
 
     User ->> ReservationService: 좌석 예약 요청 (토큰 포함)
@@ -215,17 +215,16 @@ flowchart TD
     D --> E{대기열 검증}
     E -->|성공| F[좌석 예약 요청]
     F --> G[임시 좌석 배치 및 타이머 시작]
-    G --> H{잔액 확인}
-    H -->|충전 필요| I[잔액 충전 요청]
-    H -->|충분함| J[결제 요청]
-    J --> K{좌석 최종 배정 여부}
+   G --> H[결제 요청]
+    H --> I{잔액 확인}
+    I -->|충전 필요| J[잔액 충전 요청]
+    I -->|충분함| K{좌석 최종 배정 여부}
     K -->|배정 성공| L[좌석 최종 배정 및 소유권 확정]
     L --> M[결제 완료]
     M --> N[토큰 만료 처리]
     N --> O[결제 성공 및 예약 완료]
     
-    H -->|잔액 부족| I
-    I --> J
+    J --> I
     K -->|배정 실패| X[예약 실패]
     M -->|결제 실패| X
 ```
