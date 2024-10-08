@@ -4,8 +4,8 @@ sequenceDiagram
     participant User
     participant TokenService
     participant ReservationService
-    participant PayHistoryService
     participant PayService
+    participant PayHistoryService
 
     User ->> ReservationService: 예약 가능 날짜 조회 요청
     ReservationService ->> User: 예약 가능 날짜 목록 반환
