@@ -231,3 +231,49 @@ flowchart TD
 
 ### 유즈 케이스
 ![concert_drawio](https://github.com/user-attachments/assets/6a807252-7fbb-46e4-8fe5-9e00e9526b74)
+
+### ERD 설계
+```mermaid
+erDiagram
+    USER {
+        UUID user_id PK
+        VARCHAR name
+        DOUBLE balance
+    }
+    
+    TOKEN {
+        UUID token_id PK
+        UUID user_id FK
+        DATETIME issued_at
+        INT queue_position
+        DATETIME expiration_time
+    }
+    
+    RESERVATION {
+        UUID reservation_id PK
+        UUID user_id FK
+        INT seat_number
+        DATE reservation_date
+        BOOLEAN is_temporary
+        DATETIME expiration_time
+    }
+    
+    PAYMENT {
+        UUID payment_id PK
+        UUID user_id FK
+        UUID reservation_id FK
+        DOUBLE amount
+        DATETIME payment_time
+    }
+    
+    SEAT {
+        INT seat_number PK
+        BOOLEAN is_available
+    }
+
+    USER ||--o{ TOKEN : "has"
+    USER ||--o{ RESERVATION : "makes"
+    USER ||--o{ PAYMENT : "executes"
+    RESERVATION ||--|| SEAT : "reserves"
+    RESERVATION }o--|| PAYMENT : "is paid by"
+```
