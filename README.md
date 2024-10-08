@@ -1,7 +1,7 @@
 ### 마일스톤
 https://github.com/users/fatallinverno/projects/3
 
-### 시퀀스 다이어그램
+### 전체 시퀀스 다이어그램
 ```mermaid
 sequenceDiagram
     participant User
@@ -33,6 +33,19 @@ sequenceDiagram
     ReservationService ->> PayHistoryService: 좌석 배정 완료
     PayHistoryService ->> User: 결제 완료 응답
     PayHistoryService ->> TokenService: 토큰 만료 처리
+```
+
+### 유저 토큰 API 시퀀스 다이어그램
+```mermaid
+sequenceDiagram
+    participant User
+    participant TokenService
+    participant QueueManager
+    
+    User ->> TokenService: 토큰 발급 요청
+    TokenService ->> QueueManager: 사용자 대기열에 추가
+    QueueManager ->> TokenService: 대기열 정보 반환 (대기 순서, 예상 시간 등)
+    TokenService ->> User: 토큰 및 대기열 정보 반환
 ```
 
 ### 클래스 다이어그램
