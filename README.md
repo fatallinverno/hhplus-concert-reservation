@@ -112,4 +112,4 @@ flowchart TD
 ```
 
 ### 유즈 케이스
-![concert_drawio](https://github.com/user-attachments/assets/ac20a5a9-5219-4634-b856-0d3a638c266e)
+![concert_drawio](https://github.com/user-attachments/assets/6a807252-7fbb-46e4-8fe5-9e00e9526b74)
