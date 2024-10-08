@@ -45,7 +45,7 @@ classDiagram
     class Payment
     
     class Seat
-
+    
     User "1" --> "0..*" Token
     User "1" --> "0..*" Reservation
     User "1" --> "0..*" Payment
