@@ -35,15 +35,52 @@ sequenceDiagram
 ### 도메인모델링
 ```mermaid
 classDiagram
-    class User
+    class User {
+        -UUID userId
+        -String name
+        -double balance
+        +getBalance()
+        +chargeBalance(amount: double)
+    }
     
-    class Token
+    class Token {
+        -UUID tokenId
+        -UUID userId
+        -DateTime issuedAt
+        -int queuePosition
+        -DateTime expirationTime
+        +isValid(): boolean
+        +expireToken()
+    }
     
-    class Reservation
+    class Reservation {
+        -UUID reservationId
+        -UUID userId
+        -int seatNumber
+        -Date reservationDate
+        -DateTime expirationTime
+        -boolean isTemporary
+        +holdSeat(seatNumber: int)
+        +releaseSeat()
+    }
     
-    class Payment
+    class Payment {
+        -UUID paymentId
+        -UUID userId
+        -UUID reservationId
+        -double amount
+        -DateTime paymentTime
+        +processPayment(amount: double)
+        +generateReceipt()
+    }
     
-    class Seat
+    class Seat {
+        -int seatNumber
+        -boolean isAvailable
+        +checkAvailability(): boolean
+        +reserveSeat()
+        +freeSeat()
+    }
 
     User "1" --> "0..*" Token
     User "1" --> "0..*" Reservation
