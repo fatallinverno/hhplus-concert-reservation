@@ -112,7 +112,7 @@ flowchart TD
 ```
 
 ### 유즈 케이스
-```mermaid
+```markdown
 ![Use Case Diagram](C:/Users/Linverno/Downloads/concert_drawio.png)
 ```
 
