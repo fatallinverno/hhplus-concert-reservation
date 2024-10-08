@@ -112,6 +112,4 @@ flowchart TD
 ```
 
 ### 유즈 케이스
-![Use Case Diagram](C:/Users/Linverno/Downloads/concert_drawio.png)
-
-
+![Use Case Diagram](https://github.com/fatallinverno/hhplus-concert-reservation/issues/2#issue-2572237289)
