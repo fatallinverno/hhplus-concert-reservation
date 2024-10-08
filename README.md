@@ -7,9 +7,6 @@ sequenceDiagram
     participant PaymentService
     participant BalanceService
 
-    User ->> TokenService: 토큰 발급 요청
-    TokenService ->> User: 토큰 발급 및 대기열 정보 반환
-
     User ->> ReservationService: 예약 가능 날짜 조회 요청
     ReservationService ->> User: 예약 가능 날짜 목록 반환
 
@@ -17,6 +14,9 @@ sequenceDiagram
     ReservationService ->> User: 예약 가능 좌석 정보 반환
 
     User ->> ReservationService: 좌석 예약 요청 (토큰 포함)
+    User ->> TokenService: 토큰 발급 요청
+    TokenService ->> User: 토큰 발급 및 대기열 정보 반환
+    
     ReservationService ->> ReservationService: 좌석 임시 배정 (타이머 시작)
     ReservationService ->> User: 좌석 예약 확인 응답
 
@@ -55,5 +55,3 @@ classDiagram
     User "1" --> "0..*" Payment
     Reservation "1" --> "1" Seat
 ```
-
-
