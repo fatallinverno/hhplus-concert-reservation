@@ -4,7 +4,7 @@ sequenceDiagram
     participant User
     participant TokenService
     participant ReservationService
-    participant PaymentService
+    participant PayHistoryService
     participant PayService
 
     User ->> ReservationService: 예약 가능 날짜 조회 요청
@@ -23,13 +23,13 @@ sequenceDiagram
     User ->> PayService: 잔액 조회 요청
     PayService ->> User: 잔액 반환
 
-    User ->> PaymentService: 결제 요청 (잔액 확인, 토큰 포함)
-    PaymentService ->> PayService: 잔액 차감 요청
-    PayService ->> PaymentService: 잔액 차감 확인
-    PaymentService ->> ReservationService: 좌석 최종 배정 요청
-    ReservationService ->> PaymentService: 좌석 배정 완료
-    PaymentService ->> User: 결제 완료 응답
-    PaymentService ->> TokenService: 토큰 만료 처리
+    User ->> PayService: 결제 요청 (잔액 확인, 토큰 포함)
+    PayHistoryService ->> PayService: 잔액 차감 요청
+    PayService ->> PayHistoryService: 잔액 차감 확인
+    PayHistoryService ->> ReservationService: 좌석 최종 배정 요청
+    ReservationService ->> PayHistoryService: 좌석 배정 완료
+    PayHistoryService ->> User: 결제 완료 응답
+    PayHistoryService ->> TokenService: 토큰 만료 처리
 ```
 
 ### 클래스 다이어그램
