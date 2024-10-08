@@ -33,22 +33,59 @@ sequenceDiagram
     PaymentService ->> TokenService: 토큰 만료 처리
 ```
 
-### 도메인모델링
+### 클래스 다이어그램
 ```mermaid
 classDiagram
-    class User
+    class User {
+        -UUID userId
+        -String name
+        -double balance
+        +getBalance()
+        +chargeBalance(amount: double)
+    }
     
-    class Token
+    class Token {
+        -UUID tokenId
+        -UUID userId
+        -DateTime issuedAt
+        -int queuePosition
+        -DateTime expirationTime
+        +isValid(): boolean
+        +expireToken()
+    }
     
-    class Reservation
+    class Reservation {
+        -UUID reservationId
+        -UUID userId
+        -int seatNumber
+        -Date reservationDate
+        -DateTime expirationTime
+        -boolean isTemporary
+        +holdSeat(seatNumber: int)
+        +releaseSeat()
+    }
     
-    class Payment
+    class Payment {
+        -UUID paymentId
+        -UUID userId
+        -UUID reservationId
+        -double amount
+        -DateTime paymentTime
+        +processPayment(amount: double)
+        +generateReceipt()
+    }
     
-    class Seat
-
-    User "1" --> "0..*" Token
-    User "1" --> "0..*" Reservation
-    User "1" --> "0..*" Payment
+    class Seat {
+        -int seatNumber
+        -boolean isAvailable
+        +checkAvailability(): boolean
+        +reserveSeat()
+        +freeSeat()
+    }
+    
+    User "유저" --> "유저 토큰 발급*" Token
+    User "좌석 예약 조회" --> "유저 토큰 발급*" Reservation
+    User "유저" --> "포인트 조회 및 충전*" Payment
     Reservation "1" --> "1" Seat
 ```
 
