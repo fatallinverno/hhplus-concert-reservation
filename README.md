@@ -35,20 +35,15 @@ sequenceDiagram
 ### 도메인모델링
 ```mermaid
 classDiagram
-    class User {
-    }
+    class User
     
-    class Token {
-    }
+    class Token
     
-    class Reservation {
-    }
+    class Reservation
     
-    class Payment {
-    }
+    class Payment
     
-    class Seat {
-    }
+    class Seat
 
     User "1" --> "0..*" Token
     User "1" --> "0..*" Reservation
