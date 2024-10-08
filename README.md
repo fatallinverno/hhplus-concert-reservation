@@ -31,3 +31,50 @@ sequenceDiagram
     PaymentService ->> User: 결제 완료 응답
     PaymentService ->> TokenService: 토큰 만료 처리
 ```
+
+### 도메인모델링
+```mermaid
+classDiagram
+    class User {
+        UUID userId
+        String name
+        double balance
+    }
+    
+    class Token {
+        UUID tokenId
+        UUID userId
+        DateTime issuedAt
+        int queuePosition
+        DateTime expirationTime
+    }
+    
+    class Reservation {
+        UUID reservationId
+        UUID userId
+        int seatNumber
+        Date reservationDate
+        DateTime expirationTime
+        Boolean isTemporary
+    }
+    
+    class Payment {
+        UUID paymentId
+        UUID userId
+        UUID reservationId
+        double amount
+        DateTime paymentTime
+    }
+    
+    class Seat {
+        int seatNumber
+        Boolean isAvailable
+    }
+
+    User "1" --> "0..*" Token
+    User "1" --> "0..*" Reservation
+    User "1" --> "0..*" Payment
+    Reservation "1" --> "1" Seat
+```
+
+
