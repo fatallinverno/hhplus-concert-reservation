@@ -40,7 +40,7 @@ classDiagram
         -String name
         -int pay
         +getPay()
-        +chargeBalance(amount: double)
+        +chargeBalance(amount: int)
     }
     
     class Token {
