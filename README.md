@@ -64,7 +64,7 @@ classDiagram
         +releaseSeat()
     }
     
-    class Payment {
+    class PayHistory {
         -long paymentId
         -long userId
         -long reservationId
