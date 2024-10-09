@@ -35,10 +35,10 @@ erDiagram
     }
 
     Seat {
-INT seat_id PK
-INT seat_number UNIQUE
+        INT seat_id PK
+        INT seat_number UNIQUE
         BOOLEAN is_available
-}
+    }
 
 User ||--o{ Token : "has"
 User ||--o{ Reservation : "makes"
