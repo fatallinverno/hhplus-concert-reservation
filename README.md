@@ -1,6 +1,6 @@
 ### ERD 설계
 ```mermaid
-UserInfo
+User
 ------
 - user_id (PK, LONG)
 - name (VARCHAR)
