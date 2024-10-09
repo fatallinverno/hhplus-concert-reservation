@@ -15,7 +15,8 @@ sequenceDiagram
     ReservationService ->> User: 예약 가능 날짜 목록 반환
     
     User ->> ReservationService: 예약 가능 좌석 조회 요청
-    TokenService ->> User: 토큰 검증 후 대기열 정보 반환
+    User ->> TokenService: 토큰 검증 요청
+    TokenService ->> User: 토큰 유효성 확인 응답
     ReservationService ->> User: 예약 가능 좌석 정보 반환
 
     User ->> ReservationService: 좌석 예약 요청 (토큰 포함)
@@ -52,9 +53,12 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant User
+    participant TokenService
     participant ReservationService
     participant Database
-    
+
+    User ->> TokenService: 토큰 검증 요청
+    TokenService ->> User: 토큰 유효성 확인 응답
     User ->> ReservationService: 예약 가능 날짜 조회 요청
     ReservationService ->> Database: 예약 가능한 날짜 데이터 요청
     Database ->> ReservationService: 예약 가능 날짜 데이터 반환
@@ -65,9 +69,12 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant User
+    participant TokenService
     participant ReservationService
     participant Database
-    
+
+    User ->> TokenService: 토큰 검증 요청
+    TokenService ->> User: 토큰 유효성 확인 응답
     User ->> ReservationService: 예약 가능 좌석 조회 요청 (날짜 포함)
     ReservationService ->> Database: 해당 날짜의 좌석 데이터 요청
     Database ->> ReservationService: 좌석 상태 데이터 반환
