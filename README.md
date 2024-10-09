@@ -101,9 +101,12 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant User
+    participant TokenService
     participant PayService
     participant Database
 
+    User ->> TokenService: 토큰 검증 요청
+    TokenService ->> User: 토큰 유효성 확인 응답
     User ->> PayService: 잔액 조회 요청
     PayService ->> Database: 사용자 잔액 정보 요청
     Database ->> PayService: 사용자 잔액 정보 반환
@@ -114,9 +117,12 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant User
+    participant TokenService
     participant PayService
     participant Database
 
+    User ->> TokenService: 토큰 검증 요청
+    TokenService ->> User: 토큰 유효성 확인 응답
     User ->> PayService: 잔액 충전 요청 (충전 금액 포함)
     PayService ->> Database: 잔액 업데이트 요청
     Database ->> PayService: 잔액 충전 완료 응답
