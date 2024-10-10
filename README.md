@@ -1,54 +1,185 @@
-#콘서트 예약 서비스
+### ERD 설계
+```mermaid
+erDiagram
+    User {
+        LONG user_seq PK
+        VARCHAR user_id
+        DECIMAL pay
+    }
 
-## Description
+    Token {
+        LONG token_id PK
+        LONG user_id FK "REFERENCES User(user_seq)"
+        INT queue_position
+        TIMESTAMP issued_at
+        TIMESTAMP expiration_time
+        BOOLEAN is_valid
+    }
 
-- **`콘서트 예약 서비스`**를 구현해 봅니다.
-- 대기열 시스템을 구축하고, 예약 서비스는 작업가능한 유저만 수행할 수 있도록 해야합니다.
-- 사용자는 좌석예약 시에 미리 충전한 잔액을 이용합니다.
-- 좌석 예약 요청시에, 결제가 이루어지지 않더라도 일정 시간동안 다른 유저가 해당 좌석에 접근할 수 없도록 합니다.
+    Reservation {
+        LONG reservation_id PK
+        LONG user_id FK "REFERENCES User(user_seq)"
+        INT seat_id FK "REFERENCES Seat(seat_id)"
+        DATE reservation_date
+        TIMESTAMP expiration_time
+        BOOLEAN is_temporary
+    }
 
-## Requirements
+    PayHistory {
+        LONG payment_id PK
+        LONG user_seq FK "REFERENCES User(user_seq)"
+        LONG reservation_id FK "REFERENCES Reservation(reservation_id)"
+        DECIMAL amount
+        TIMESTAMP payment_time
+        ENUM payment_status "PENDING, COMPLETED, FAILED"
+    }
 
-- 아래 5가지 API 를 구현합니다.
-    - 유저 토큰 발급 API
-    - 예약 가능 날짜 / 좌석 API
-    - 좌석 예약 요청 API
-    - 잔액 충전 / 조회 API
-    - 결제 API
-- 각 기능 및 제약사항에 대해 단위 테스트를 반드시 하나 이상 작성하도록 합니다.
-- 다수의 인스턴스로 어플리케이션이 동작하더라도 기능에 문제가 없도록 작성하도록 합니다.
-- 동시성 이슈를 고려하여 구현합니다.
-- 대기열 개념을 고려해 구현합니다.
+    Seat {
+        INT seat_id PK
+        INT seat_number
+        BOOLEAN is_available
+    }
 
-## API Specs
+    User ||--o{ Token : "has"
+    User ||--o{ Reservation : "makes"
+    User ||--o{ PayHistory : "has"
+    Reservation ||--o| Seat : "uses"
+    Reservation ||--o{ PayHistory : "is associated with"
+```
+### API 명세서
+#### 1. 유저 토큰 발급 API
+설명: 사용자가 대기열에 들어가기 위해 대기열 토큰을 발급받는 API 입니다.
+URL: @PostMapping("/api/tokens")
+요청
+```markdown
+{
+    user_id = "test1234"
+}
+```
+응답 성공 시
+```markdown
+{
+    token_id = 67890`
+    queue_position = 5
+    issued_at = "2024-10-08 10:08"
+    expiration_time = "2024-10-08 12:08"
+}
+```
+오류
+- 400 Bad Request: 요청이 잘못된 경우
+- 500 Internal Server Error: 서버 내부 오류 발생 시
 
-**1️⃣ `주요` 유저 대기열 토큰 기능**
+#### 2. 예약 가능 날짜 조회 API
+설명: 예약 가능한 날짜 목록을 조회하는 API 입니다.
+URL: @GetMapping("/api/reservationData/available")
+응답 성공 시
+```markdown
+{
+    available_dates = ["2024-10-13", "2024-10-14", "2024-10-15"]
+}
+```
+오류
+- 500 Internal Server Error: 서버 내부 오류 발생 시
 
-- 서비스를 이용할 토큰을 발급받는 API를 작성합니다.
-- 토큰은 유저의 UUID 와 해당 유저의 대기열을 관리할 수 있는 정보 ( 대기 순서 or 잔여 시간 등 ) 를 포함합니다.
-- 이후 모든 API 는 위 토큰을 이용해 대기열 검증을 통과해야 이용 가능합니다.
-> 기본적으로 폴링으로 본인의 대기열을 확인한다고 가정하며, 다른 방안 또한 고려해보고 구현해 볼 수 있습니다. 
+#### 3. 예약 가능 좌석 조회 API
+설명: 특정 날짜에 예약 가능한 좌석 목록을 조회하는 API 입니다.
+URL: @GetMapping("/api/reservationSeat/available")
+요청
+```markdown
+{
+    reservation_date = "2024-10-13"
+}
+```
+응답 성공 시
+```markdown
+{
+    available_seats = [1, 2, 3, 4, 5]
+}
+```
+오류
+- 400 Bad Request: 요청이 잘못된 경우
+- 500 Internal Server Error: 서버 내부 오류 발생 시
 
-**2️⃣ `기본` 예약 가능 날짜 / 좌석 API**
+#### 4. 좌석 예약 요청 API
+설명: 사용자가 좌석을 예약하고 임시로 좌석을 보유하는 API 입니다.
+URL: @PostMapping("/api/reservation")
+요청
+```markdown
+{
+    user_id = "test"
+    reservation_date = "2024-10-13"
+    reservation_seat = 1
+}
+```
+응답 성공시
+```markdown
+{
+    reservation_id = 98765
+    expiration_time = "2024-10-10 12:05"
+    is_temporary = true
+}
+```
+오류:
+ - 400 Bad Request: 잘못된 요청 형식
+ - 404 Not Found: 좌석 또는 날짜를 찾을 수 없는 경우
+ - 500 Internal Server Error: 서버 내부 오류 발생 시
 
-- 예약가능한 날짜와 해당 날짜의 좌석을 조회하는 API 를 각각 작성합니다.
-- 예약 가능한 날짜 목록을 조회할 수 있습니다.
-- 날짜 정보를 입력받아 예약가능한 좌석정보를 조회할 수 있습니다.
-> 좌석 정보는 1 ~ 50 까지의 좌석번호로 관리됩니다.
+#### 5. 잔액 조회 API
+설명: 사용자가 잔액을 조회하는 API 입니다.
+URL: @GetMapping("/api/pay")
+응답 성공 시
+```markdown
+{
+    user_id = "test"
+    amount = "10000"
+}
+```
+오류
+ - 400 Bad Request: 잘못된 요청 형식
+ - 500 Internal Server Error: 서버 내부 오류 발생 시
 
-**3️⃣ `주요` 좌석 예약 요청 API**
+#### 6. 잔액 충전 API
+설명: 사용자가 잔액을 충전하는 API 입니다.
+URL: @PostMapping("/api/chargePay")
+요청
+```markdown
+{
+    user_id = "test"
+    amount = 5000
+}
+```
+응답 성공 시
+```markdown
+{
+    user_id = "test"
+    pay = 15000
+}
+```
+오류
+- 400 Bad Request: 잘못된 요청 형식
+- 500 Internal Server Error: 서버 내부 오류 발생 시
 
-- 좌석 예약과 동시에 해당 좌석은 그 유저에게 약 5분간 임시 배정됩니다. ( 시간은 정책에 따라 자율적으로 정의합니다. )
-- 날짜와 좌석 정보를 입력받아 좌석을 예약 처리하는 API 를 작성합니다.
-- 만약 배정 시간 내에 결제가 완료되지 않는다면 좌석에 대한 임시 배정은 해제되어야 하며 임시배정 상태의 좌석에 대해 다른 사용자는 예약할 수 없어야 한다.
-
-**4️⃣ `기본`**  **잔액 충전 / 조회 API**
-
-- 결제에 사용될 금액을 API 를 통해 충전하는 API 를 작성합니다.
-- 사용자 식별자 및 충전할 금액을 받아 잔액을 충전합니다.
-- 사용자 식별자를 통해 해당 사용자의 잔액을 조회합니다.
-
-**5️⃣ `주요` 결제 API**
-
-- 결제 처리하고 결제 내역을 생성하는 API 를 작성합니다.
-- 결제가 완료되면 해당 좌석의 소유권을 유저에게 배정하고 대기열 토큰을 만료시킵니다.
+#### 7. 결제 API
+설명: 사용자가 결제하는 API 입니다.
+URL: @PostMapping("/api/payment")
+요청
+```markdown
+{
+    user_id = "test"
+    reservation_id = 67890
+    amount = 10000
+}
+```
+응답 성공 시
+```markdown
+{
+    payment_id = 1234
+    reservation_date = "2024-10-13"
+    reservation_seat = 1 
+    payment_status = "COMPLETED"
+}
+```
+오류
+ - 400 Bad Request: 잘못된 요청 형식
+ - 402 Payment Required: 잔액 부족으로 결제 불가
+ - 500 Internal Server Error: 서버 내부 오류 발생 시
