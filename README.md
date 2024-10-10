@@ -6,7 +6,7 @@ erDiagram
         VARCHAR name
         DECIMAL pay
     }
-
+    
     Token {
         LONG token_id PK
         LONG user_id FK "REFERENCES User(user_id)"
@@ -40,9 +40,13 @@ erDiagram
         BOOLEAN is_available
     }
 
-User ||--o{ Token : "has"
-User ||--o{ Reservation : "makes"
-User ||--o{ PayHistory : "has"
-Reservation ||--o| Seat : "uses"
-Reservation ||--o{ PayHistory : "is associated with"
+    User ||--o{ Token : "has"
+    
+    User ||--o{ Reservation : "makes"
+    
+    User ||--o{ PayHistory : "has"
+    
+    Reservation ||--o| Seat : "uses"
+    
+    Reservation ||--o{ PayHistory : "is associated with"
 ```
