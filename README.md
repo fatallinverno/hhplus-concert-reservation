@@ -39,10 +39,4 @@ erDiagram
         INT seat_number UNIQUE
         BOOLEAN is_available
     }
-
-    User ||--o{ Token : "has"
-    User ||--o{ Reservation : "makes"
-    User ||--o{ PayHistory : "has"
-    Reservation ||--o| Seat : "uses"
-    Reservation ||--o{ PayHistory : "is associated with"
 ```
