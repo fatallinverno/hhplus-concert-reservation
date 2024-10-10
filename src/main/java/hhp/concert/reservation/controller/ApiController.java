@@ -34,7 +34,7 @@ public class ApiController {
         return users.stream()
                 .filter(user -> user.get("userSeq").equals(userSeq))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("유저가 없습니다."));
     }
 
     @PostMapping("/{userId}/pay")
