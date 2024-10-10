@@ -59,7 +59,7 @@ public class ApiController {
     }
 
     @PostMapping("/payment")
-    public Map<String, Object> makePayment(@RequestBody Map<String, Object> request) {
+    public Map<String, Object> paymentProcess(@RequestBody Map<String, Object> request) {
         Long userSeq = Long.parseLong(request.get("userSeq").toString());
         int amount = Integer.parseInt(request.get("amount").toString());
         Map<String, Object> user = getPay(userSeq);
