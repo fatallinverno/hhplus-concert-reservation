@@ -36,7 +36,13 @@ erDiagram
 
     Seat {
         INT seat_id PK
-        INT seat_number UNIQUE
+        INT seat_number
         BOOLEAN is_available
     }
+
+    User ||--o{ Token : "has"
+    User ||--o{ Reservation : "makes"
+    User ||--o{ PayHistory : "has"
+    Reservation ||--o| Seat : "uses"
+    Reservation ||--o{ PayHistory : "is associated with"
 ```
