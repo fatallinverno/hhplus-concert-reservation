@@ -47,7 +47,7 @@ erDiagram
     Reservation ||--o{ PayHistory : "is associated with"
 ```
 ### API 명세서
-#### 유저 토큰 발급 API
+#### 1. 유저 토큰 발급 API
 설명: 사용자가 대기열에 들어가기 위해 대기열 토큰을 발급받는 API 입니다.
 URL: @PostMapping("/api/tokens")
 요청
@@ -69,7 +69,7 @@ URL: @PostMapping("/api/tokens")
 - 400 Bad Request: 요청이 잘못된 경우
 - 500 Internal Server Error: 서버 내부 오류 발생 시
 
-#### 예약 가능 날짜 조회 API
+#### 2. 예약 가능 날짜 조회 API
 설명: 예약 가능한 날짜 목록을 조회하는 API 입니다.
 URL: @GetMapping("/api/reservationData/available")
 응답 성공 시
@@ -81,7 +81,7 @@ URL: @GetMapping("/api/reservationData/available")
 오류
 - 500 Internal Server Error: 서버 내부 오류 발생 시
 
-#### 예약 가능 좌석 조회 API
+#### 3. 예약 가능 좌석 조회 API
 설명: 특정 날짜에 예약 가능한 좌석 목록을 조회하는 API 입니다.
 URL: @GetMapping("/api/reservationSeat/available")
 요청
@@ -100,7 +100,7 @@ URL: @GetMapping("/api/reservationSeat/available")
 - 400 Bad Request: 요청이 잘못된 경우
 - 500 Internal Server Error: 서버 내부 오류 발생 시
 
-#### 좌석 예약 요청 API
+#### 4. 좌석 예약 요청 API
 설명: 사용자가 좌석을 예약하고 임시로 좌석을 보유하는 API 입니다.
 URL: @PostMapping("/api/reservation")
 요청
@@ -124,7 +124,7 @@ URL: @PostMapping("/api/reservation")
  - 404 Not Found: 좌석 또는 날짜를 찾을 수 없는 경우
  - 500 Internal Server Error: 서버 내부 오류 발생 시
 
-#### 잔액 조회 API
+#### 5. 잔액 조회 API
 설명: 사용자가 잔액을 조회하는 API 입니다.
 URL: @GetMapping("/api/pay")
 응답 성공 시
@@ -138,7 +138,7 @@ URL: @GetMapping("/api/pay")
  - 400 Bad Request: 잘못된 요청 형식
  - 500 Internal Server Error: 서버 내부 오류 발생 시
 
-#### 잔액 충전 API
+#### 6. 잔액 충전 API
 설명: 사용자가 잔액을 충전하는 API 입니다.
 URL: @PostMapping("/api/chargePay")
 요청
@@ -159,7 +159,7 @@ URL: @PostMapping("/api/chargePay")
 - 400 Bad Request: 잘못된 요청 형식
 - 500 Internal Server Error: 서버 내부 오류 발생 시
 
-#### 결제 API
+#### 7. 결제 API
 설명: 사용자가 결제하는 API 입니다.
 URL: @PostMapping("/api/payment")
 요청
