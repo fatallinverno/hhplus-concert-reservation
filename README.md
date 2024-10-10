@@ -49,7 +49,7 @@ erDiagram
 ### API 명세서
 #### 유저 토큰 발급 API
 설명: 사용자가 대기열에 들어가기 위해 대기열 토큰을 발급받는 API 입니다.
-URL: @RequestMapping(value = "/api/tokens", method = RequestMethod.POST)
+URL: @PostMapping("/api/tokens")
 요청
 ```markdown
 {
@@ -71,7 +71,7 @@ URL: @RequestMapping(value = "/api/tokens", method = RequestMethod.POST)
 
 #### 예약 가능 날짜 조회 API
 설명: 예약 가능한 날짜 목록을 조회하는 API 입니다.
-URL: @RequestMapping(value = "/api/reservationData/available", method = RequestMethod.GET)
+URL: @GetMapping("/api/reservationData/available")
 응답 성공 시
 ```markdown
 {
@@ -83,7 +83,7 @@ URL: @RequestMapping(value = "/api/reservationData/available", method = RequestM
 
 #### 예약 가능 좌석 조회 API
 설명: 특정 날짜에 예약 가능한 좌석 목록을 조회하는 API 입니다.
-URL: @RequestMapping(value = "/api/reservationSeat/available", method = RequestMethod.GET)
+URL: @GetMapping("/api/reservationSeat/available")
 요청
 ```markdown
 {
@@ -102,7 +102,7 @@ URL: @RequestMapping(value = "/api/reservationSeat/available", method = RequestM
 
 #### 좌석 예약 요청 API
 설명: 사용자가 좌석을 예약하고 임시로 좌석을 보유하는 API 입니다.
-URL: @RequestMapping(value = "/api/reservation", method = RequestMethod.POST)
+URL: @PostMapping("/api/reservation")
 요청
 ```markdown
 {
@@ -126,7 +126,7 @@ URL: @RequestMapping(value = "/api/reservation", method = RequestMethod.POST)
 
 #### 잔액 조회 API
 설명: 사용자가 잔액을 조회하는 API 입니다.
-URL: @RequestMapping(value = "/api/pay", method = RequestMethod.POST)
+URL: @GetMapping("/api/pay")
 응답 성공 시
 ```markdown
 {
@@ -140,7 +140,7 @@ URL: @RequestMapping(value = "/api/pay", method = RequestMethod.POST)
 
 #### 잔액 충전 API
 설명: 사용자가 잔액을 충전하는 API 입니다.
-URL: @RequestMapping(value = "/api/chargePay", method = RequestMethod.POST)
+URL: @PostMapping("/api/chargePay")
 요청
 ```markdown
 {
@@ -161,7 +161,7 @@ URL: @RequestMapping(value = "/api/chargePay", method = RequestMethod.POST)
 
 #### 결제 API
 설명: 사용자가 결제하는 API 입니다.
-URL: @RequestMapping(value = "/api/payment", method = RequestMethod.POST)
+URL: @PostMapping("/api/payment")
 요청
 ```markdown
 {
