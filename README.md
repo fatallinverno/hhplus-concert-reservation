@@ -1,54 +1,246 @@
-#콘서트 예약 서비스
+### 마일스톤
+https://github.com/users/fatallinverno/projects/3
 
-## Description
+### 전체 시퀀스 다이어그램
+```mermaid
+sequenceDiagram
+    participant User
+    participant TokenService
+    participant ReservationService
+    participant PayService
+    participant PayHistoryService
 
-- **`콘서트 예약 서비스`**를 구현해 봅니다.
-- 대기열 시스템을 구축하고, 예약 서비스는 작업가능한 유저만 수행할 수 있도록 해야합니다.
-- 사용자는 좌석예약 시에 미리 충전한 잔액을 이용합니다.
-- 좌석 예약 요청시에, 결제가 이루어지지 않더라도 일정 시간동안 다른 유저가 해당 좌석에 접근할 수 없도록 합니다.
+    User ->> TokenService: 토큰 발급 요청
+    User ->> ReservationService: 예약 가능 날짜 조회 요청
+    ReservationService ->> User: 예약 가능 날짜 목록 반환
+    
+    User ->> ReservationService: 예약 가능 좌석 조회 요청
+    User ->> TokenService: 토큰 검증 요청
+    TokenService ->> User: 토큰 유효성 확인 응답
+    ReservationService ->> User: 예약 가능 좌석 정보 반환
 
-## Requirements
+    User ->> ReservationService: 좌석 예약 요청 (토큰 포함)
+    
+    ReservationService ->> ReservationService: 좌석 임시 배정 (타이머 시작)
+    ReservationService ->> User: 좌석 예약 확인 응답
 
-- 아래 5가지 API 를 구현합니다.
-    - 유저 토큰 발급 API
-    - 예약 가능 날짜 / 좌석 API
-    - 좌석 예약 요청 API
-    - 잔액 충전 / 조회 API
-    - 결제 API
-- 각 기능 및 제약사항에 대해 단위 테스트를 반드시 하나 이상 작성하도록 합니다.
-- 다수의 인스턴스로 어플리케이션이 동작하더라도 기능에 문제가 없도록 작성하도록 합니다.
-- 동시성 이슈를 고려하여 구현합니다.
-- 대기열 개념을 고려해 구현합니다.
+    User ->> PayService: 잔액 조회 요청
+    PayService ->> User: 잔액 반환
 
-## API Specs
+    User ->> PayService: 결제 요청 (잔액 확인, 토큰 포함)
+    PayHistoryService ->> PayService: 잔액 차감 요청
+    PayService ->> PayHistoryService: 잔액 차감 확인
+    PayHistoryService ->> ReservationService: 좌석 최종 배정 요청
+    ReservationService ->> PayHistoryService: 좌석 배정 완료
+    PayHistoryService ->> User: 결제 완료 응답
+    PayHistoryService ->> TokenService: 토큰 만료 처리
+```
 
-**1️⃣ `주요` 유저 대기열 토큰 기능**
+### 유저 토큰 API 시퀀스 다이어그램
+```mermaid
+sequenceDiagram
+    participant User
+    participant TokenService
+    participant QueueManager
+    
+    User ->> TokenService: 토큰 발급 요청
+    TokenService ->> QueueManager: 사용자 대기열에 추가
+    QueueManager ->> TokenService: 대기열 정보 반환 (대기 순서, 예상 시간 등)
+    TokenService ->> User: 토큰 및 대기열 정보 반환
+```
 
-- 서비스를 이용할 토큰을 발급받는 API를 작성합니다.
-- 토큰은 유저의 UUID 와 해당 유저의 대기열을 관리할 수 있는 정보 ( 대기 순서 or 잔여 시간 등 ) 를 포함합니다.
-- 이후 모든 API 는 위 토큰을 이용해 대기열 검증을 통과해야 이용 가능합니다.
-> 기본적으로 폴링으로 본인의 대기열을 확인한다고 가정하며, 다른 방안 또한 고려해보고 구현해 볼 수 있습니다. 
+### 예약 날짜 조회 시퀀스 다이어그램
+```mermaid
+sequenceDiagram
+    participant User
+    participant TokenService
+    participant ReservationService
+    participant Database
 
-**2️⃣ `기본` 예약 가능 날짜 / 좌석 API**
+    User ->> TokenService: 토큰 검증 요청
+    TokenService ->> User: 토큰 유효성 확인 응답
+    User ->> ReservationService: 예약 가능 날짜 조회 요청
+    ReservationService ->> Database: 예약 가능한 날짜 데이터 요청
+    Database ->> ReservationService: 예약 가능 날짜 데이터 반환
+    ReservationService ->> User: 예약 가능 날짜 목록 반환
+```
 
-- 예약가능한 날짜와 해당 날짜의 좌석을 조회하는 API 를 각각 작성합니다.
-- 예약 가능한 날짜 목록을 조회할 수 있습니다.
-- 날짜 정보를 입력받아 예약가능한 좌석정보를 조회할 수 있습니다.
-> 좌석 정보는 1 ~ 50 까지의 좌석번호로 관리됩니다.
+### 예약 가능 좌석 조회 시퀀스 다이어그램
+```mermaid
+sequenceDiagram
+    participant User
+    participant TokenService
+    participant ReservationService
+    participant Database
 
-**3️⃣ `주요` 좌석 예약 요청 API**
+    User ->> TokenService: 토큰 검증 요청
+    TokenService ->> User: 토큰 유효성 확인 응답
+    User ->> ReservationService: 예약 가능 좌석 조회 요청 (날짜 포함)
+    ReservationService ->> Database: 해당 날짜의 좌석 데이터 요청
+    Database ->> ReservationService: 좌석 상태 데이터 반환
+    ReservationService ->> User: 예약 가능 좌석 목록 반환
+```
 
-- 좌석 예약과 동시에 해당 좌석은 그 유저에게 약 5분간 임시 배정됩니다. ( 시간은 정책에 따라 자율적으로 정의합니다. )
-- 날짜와 좌석 정보를 입력받아 좌석을 예약 처리하는 API 를 작성합니다.
-- 만약 배정 시간 내에 결제가 완료되지 않는다면 좌석에 대한 임시 배정은 해제되어야 하며 임시배정 상태의 좌석에 대해 다른 사용자는 예약할 수 없어야 한다.
+### 좌석 예약 요청 시퀀스 다이어그램
+```mermaid
+sequenceDiagram
+    participant User
+    participant TokenService
+    participant ReservationService
+    participant Database
 
-**4️⃣ `기본`**  **잔액 충전 / 조회 API**
+    User ->> TokenService: 토큰 검증 요청
+    TokenService ->> User: 토큰 유효성 확인 응답
+    User ->> ReservationService: 좌석 예약 요청 (날짜 및 좌석 번호 포함)
+    ReservationService ->> Database: 좌석 상태 확인 및 임시 예약 처리
+    Database ->> ReservationService: 임시 예약 성공 여부 반환
+    ReservationService ->> User: 임시 예약 성공 응답 및 타이머 시작 (예: 5분)
+```
 
-- 결제에 사용될 금액을 API 를 통해 충전하는 API 를 작성합니다.
-- 사용자 식별자 및 충전할 금액을 받아 잔액을 충전합니다.
-- 사용자 식별자를 통해 해당 사용자의 잔액을 조회합니다.
+### 잔액 조회 시퀀스 다이어그램
+```mermaid
+sequenceDiagram
+    participant User
+    participant TokenService
+    participant PayService
+    participant Database
 
-**5️⃣ `주요` 결제 API**
+    User ->> TokenService: 토큰 검증 요청
+    TokenService ->> User: 토큰 유효성 확인 응답
+    User ->> PayService: 잔액 조회 요청
+    PayService ->> Database: 사용자 잔액 정보 요청
+    Database ->> PayService: 사용자 잔액 정보 반환
+    PayService ->> User: 잔액 조회 결과 반환
+```
 
-- 결제 처리하고 결제 내역을 생성하는 API 를 작성합니다.
-- 결제가 완료되면 해당 좌석의 소유권을 유저에게 배정하고 대기열 토큰을 만료시킵니다.
+### 잔액 충전 시퀀스 다이어그램
+```mermaid
+sequenceDiagram
+    participant User
+    participant TokenService
+    participant PayService
+    participant Database
+
+    User ->> TokenService: 토큰 검증 요청
+    TokenService ->> User: 토큰 유효성 확인 응답
+    User ->> PayService: 잔액 충전 요청 (충전 금액 포함)
+    PayService ->> Database: 잔액 업데이트 요청
+    Database ->> PayService: 잔액 충전 완료 응답
+    PayService ->> User: 충전 완료 응답
+```
+
+### 결제 요청 시퀀스 다이어그램
+```mermaid
+sequenceDiagram
+    participant User
+    participant TokenService
+    participant PayHistoryService
+    participant PayService
+    participant ReservationService
+    participant Database
+
+    User ->> TokenService: 토큰 검증 요청
+    TokenService ->> User: 토큰 유효성 확인 응답
+
+    User ->> PayHistoryService: 결제 요청 (예약 ID, 금액 포함)
+    PayHistoryService ->> PayService: 잔액 확인 요청
+    PayService ->> Database: 사용자 잔액 조회
+    Database ->> PayService: 사용자 잔액 정보 반환
+    PayService ->> PayHistoryService: 잔액 확인 응답
+
+    PayHistoryService ->> PayService: 잔액 차감 요청
+    PayService ->> Database: 잔액 업데이트
+    Database ->> PayService: 업데이트 결과 반환
+
+    PayHistoryService ->> ReservationService: 최종 좌석 예약 요청
+    ReservationService ->> Database: 좌석 최종 배정 처리
+    Database ->> ReservationService: 배정 완료 응답
+
+    PayHistoryService ->> TokenService: 토큰 만료 처리
+    TokenService ->> Database: 토큰 상태 업데이트
+    Database ->> TokenService: 업데이트 결과 반환
+
+    PayHistoryService ->> User: 결제 완료 응답
+```
+
+### 클래스 다이어그램
+```mermaid
+classDiagram
+    class User {
+        -long userId
+        -String name
+        -int pay
+        +getPay()
+        +chargePay(amount: int)
+    }
+    
+    class Token {
+        -UUID tokenId
+        -long userId
+        -DateTime issuedAt
+        -int queuePosition
+        -DateTime expirationTime
+        +isValid(): boolean
+        +expireToken()
+    }
+    
+    class Reservation {
+        -long reservationId
+        -long userId
+        -int seatNumber
+        -Date reservationDate
+        -DateTime expirationTime
+        -boolean isTemporary
+        +holdSeat(seatNumber: int)
+        +releaseSeat()
+    }
+    
+    class PayHistory {
+        -long paymentId
+        -long userId
+        -long reservationId
+        -int amount
+        -DateTime paymentTime
+        +processPayment(amount: int)
+        +usageHistory()
+    }
+    
+    class Seat {
+        -int seatNumber
+        -boolean isAvailable
+        +checkAvailability(): boolean
+        +reserveSeat()
+        +freeSeat()
+    }
+
+    User "1" --> "0..*" Token
+    User "1" --> "0..*" Reservation
+    User "1" --> "0..*" PayHistory
+    Reservation "1" --> "1" Seat
+```
+
+### 플로우 차트
+```mermaid
+flowchart TD
+    A[서비스 시작] --> B[유저 토큰 발급 요청]
+    B --> C[예약 가능 날짜 조회]
+    C --> D[예약 가능 좌석 조회]
+    D --> E{대기열 검증}
+    E -->|성공| F[좌석 예약 요청]
+    F --> G[임시 좌석 배치 및 타이머 시작]
+   G --> H[결제 요청]
+    H --> I{잔액 확인}
+    I -->|충전 필요| J[잔액 충전 요청]
+    I -->|충분함| K{좌석 최종 배정 여부}
+    K -->|배정 성공| L[좌석 최종 배정]
+    L --> M[결제 완료]
+    M --> N[토큰 만료 처리]
+    N --> O[결제 성공 및 예약 완료]
+    
+    J --> I
+    K -->|배정 실패| X[예약 실패]
+    M -->|결제 실패| X
+```
+
+### 유즈 케이스
+![concert_drawio](https://github.com/user-attachments/assets/6a807252-7fbb-46e4-8fe5-9e00e9526b74)
