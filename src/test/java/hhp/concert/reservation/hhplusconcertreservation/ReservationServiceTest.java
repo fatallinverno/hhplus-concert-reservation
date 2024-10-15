@@ -51,38 +51,56 @@ public class ReservationServiceTest {
     @Test
     @DisplayName("예약 가능 날짜 조회")
     void testGetAvailableDates() {
+        Long concertId = 1L;
         List<String> mockDates = Arrays.asList("2023-10-15", "2023-10-16", "2023-10-17");
-        when(reservationRepository.findAvailableDates()).thenReturn(mockDates);
+        when(reservationRepository.findAvailableDatesByConcert(concertId)).thenReturn(mockDates);
 
-        List<String> availableDates = reservationService.getAvailableDates();
+        List<String> availableDates = reservationService.findAvailableDatesByConcert(concertId);
         assertEquals(mockDates, availableDates);
 
-        verify(reservationRepository, times(1)).findAvailableDates();
+        verify(reservationRepository).findAvailableDatesByConcert(concertId);
     }
 
     @Test
     @DisplayName("예약 가능 좌석 조회")
     void testGetAvailableSeats() {
+        Long seatId = 1L;
         String date = "2023-10-15";
         List<Integer> reservedSeats = Arrays.asList(1, 2, 3);
+
+        // 예약된 좌석 번호 Mock 설정
         when(reservationRepository.findReservedSeatNumbersByDate(date)).thenReturn(reservedSeats);
 
+        // 전체 좌석을 SeatEntity 객체로 생성하고, seatNumber 필드를 명시적으로 설정
         List<SeatEntity> allSeats = Arrays.asList(
-                new SeatEntity(1L, 1, true),
-                new SeatEntity(2L, 2, true),
-                new SeatEntity(3L, 3, true),
-                new SeatEntity(4L, 4, true),
-                new SeatEntity(5L, 5, true)
+                createSeatEntity(seatId, 1),
+                createSeatEntity(seatId, 2),
+                createSeatEntity(seatId, 3),
+                createSeatEntity(seatId, 4),
+                createSeatEntity(seatId, 5)
         );
+
+        // seatRepository.findAll()이 올바른 SeatEntity 객체 리스트를 반환하도록 Mock 설정
         when(seatRepository.findAll()).thenReturn(allSeats);
 
+        // 예약 가능한 좌석 조회
         List<Integer> availableSeats = reservationService.getAvailableSeats(date);
         List<Integer> expectedSeats = Arrays.asList(4, 5);
 
+        // 예상 값과 실제 값 비교
         assertEquals(expectedSeats, availableSeats);
 
         verify(reservationRepository, times(1)).findReservedSeatNumbersByDate(date);
         verify(seatRepository, times(1)).findAll();
+
+    }
+
+    // SeatEntity 객체를 생성하고 seatNumber 필드를 설정하는 헬퍼 메서드
+    private SeatEntity createSeatEntity(Long seatId, int seatNumber) {
+        SeatEntity seat = new SeatEntity();
+        seat.setSeatId(seatId);
+        seat.setSeatNumber(seatNumber);
+        return seat;
     }
 
     @Test
