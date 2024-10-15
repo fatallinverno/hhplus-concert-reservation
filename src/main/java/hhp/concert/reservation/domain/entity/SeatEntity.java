@@ -7,6 +7,7 @@ import lombok.Getter;
 @Data
 @Entity
 @Getter
+@Table(name = "seat")
 public class SeatEntity {
 
     @Id
@@ -25,4 +26,6 @@ public class SeatEntity {
         this.seatId = seatId;
     }
 
+    public SeatEntity(long l, int i, boolean b) {
+    }
 }
