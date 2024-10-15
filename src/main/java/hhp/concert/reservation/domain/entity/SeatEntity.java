@@ -26,6 +26,4 @@ public class SeatEntity {
         this.seatId = seatId;
     }
 
-    public SeatEntity(long l, int i, boolean b) {
-    }
 }
