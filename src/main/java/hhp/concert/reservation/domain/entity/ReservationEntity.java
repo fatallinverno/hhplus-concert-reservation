@@ -36,4 +36,8 @@ public class ReservationEntity {
     @JoinColumn(name = "seat_id", referencedColumnName = "seatId")
     private SeatEntity seatEntity;
 
+    @ManyToOne
+    @JoinColumn(name = "concert_id", referencedColumnName = "concertId")
+    private ConcertEntity concertEntity;
+
 }
