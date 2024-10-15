@@ -3,7 +3,6 @@ package hhp.concert.reservation.application.service;
 
 import hhp.concert.reservation.util.JwtUtil;
 import io.jsonwebtoken.Claims;
-import jakarta.persistence.Id;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
