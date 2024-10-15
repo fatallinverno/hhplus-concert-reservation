@@ -15,8 +15,8 @@ public class ReservationContoller {
     private ReservationService reservationService;
 
     @GetMapping("/availableDates")
-    public List<String> getAvailableDates() {
-        return reservationService.getAvailableDates();
+    public List<String> getAvailableDates(Long concertId) {
+        return reservationService.findAvailableDatesByConcert(concertId);
     }
 
     @GetMapping("/availableSeats")
