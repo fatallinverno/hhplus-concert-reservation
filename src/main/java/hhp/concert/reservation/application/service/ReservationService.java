@@ -3,10 +3,13 @@ package hhp.concert.reservation.application.service;
 import hhp.concert.reservation.domain.entity.ReservationEntity;
 import hhp.concert.reservation.domain.entity.SeatEntity;
 import hhp.concert.reservation.domain.entity.UserEntity;
+import hhp.concert.reservation.infrastructure.repository.ConcertRepository;
 import hhp.concert.reservation.infrastructure.repository.ReservationRepository;
 import hhp.concert.reservation.infrastructure.repository.SeatRepository;
 import hhp.concert.reservation.infrastructure.repository.UserRepository;
 import hhp.concert.reservation.util.JwtUtil;
+import hhp.concert.reservation.validate.ConcertValidate;
+import hhp.concert.reservation.validate.ReservationValidate;
 import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,15 +33,27 @@ public class ReservationService {
     private UserRepository userRepository;
 
     @Autowired
+    private ConcertRepository concertRepository;
+
+    @Autowired
     private ReservationRepository reservationRepository;
 
     @Autowired
     private SeatRepository seatRepository;
 
+    private ReservationValidate reservationValidate;
+
+    private ConcertValidate concertValidate;
+
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
-    public List<String> getAvailableDates() {
-        return reservationRepository.findAvailableDates();
+    public List<String> findAvailableDatesByConcert(Long concertId) {
+        boolean exists = concertRepository.existsById(concertId);
+        concertValidate.validateConcertId(exists);
+
+        List<String> dateCheck = reservationRepository.findAvailableDatesByConcert(concertId);
+
+        return concertValidate.filterPastDates(dateCheck);
     }
 
     public List<Integer> getAvailableSeats(String date) {
@@ -46,8 +61,8 @@ public class ReservationService {
 
         return seatRepository.findAll()
                 .stream()
-                .map(seat -> seat.getSeatNumber()) // 모든 좌석 번호를 가져와서
-                .filter(seatNumber -> !reservedSeats.contains(seatNumber)) // 예약된 좌석을 제외
+                .map(seat -> seat.getSeatNumber())
+                .filter(seatNumber -> !reservedSeats.contains(seatNumber))
                 .collect(Collectors.toList());
     }
 
@@ -60,9 +75,7 @@ public class ReservationService {
         SeatEntity seat = seatRepository.findById(seatId)
                 .orElseThrow(() -> new RuntimeException("좌석이 없습니다."));
 
-        if (!seat.isAvailable()) {
-            throw new RuntimeException("좌석이 예약 불가 상태입니다.");
-        }
+        reservationValidate.validateSeat(seat);
 
         ReservationEntity reservation = new ReservationEntity();
         reservation.setUserEntity(user);
