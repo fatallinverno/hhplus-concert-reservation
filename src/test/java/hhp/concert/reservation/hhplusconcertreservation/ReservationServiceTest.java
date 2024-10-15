@@ -79,15 +79,15 @@ public class ReservationServiceTest {
         ReservationEntity savedReservation = reservationService.reserveSeat(token, seatId, date);
         assertEquals(reservation, savedReservation);
 
-        verify(userRepository, times(1)).findById(userSeq);
-        verify(seatRepository, times(1)).findById(seatId);
-        verify(seatRepository, times(1)).save(seat);
-        verify(reservationRepository, times(1)).save(any(ReservationEntity.class));
+        verify(userRepository).findById(userSeq);
+        verify(seatRepository).findById(seatId);
+        verify(seatRepository).save(seat);
+        verify(reservationRepository).save(any(ReservationEntity.class));
     }
 
     @Test
     void testReserveSeatSeatNotAvailable() {
-        String token = "fake.jwt.token";
+        String jwtToken = "jwt.token";
         Long userSeq = 1L;
         Long seatId = 1L;
         String date = "2024-10-15";
@@ -101,14 +101,14 @@ public class ReservationServiceTest {
 
         Claims claims = mock(Claims.class);
         when(claims.get("userSeq", Long.class)).thenReturn(userSeq);
-        when(jwtUtil.extractClaims(token)).thenReturn(claims);
+        when(jwtUtil.extractClaims(jwtToken)).thenReturn(claims);
         when(userRepository.findById(userSeq)).thenReturn(Optional.of(user));
         when(seatRepository.findById(seatId)).thenReturn(Optional.of(seat));
 
-        assertThrows(RuntimeException.class, () -> reservationService.reserveSeat(token, seatId, date), "좌석이 예약 불가 상태입니다.");
+        assertThrows(RuntimeException.class, () -> reservationService.reserveSeat(jwtToken, seatId, date), "좌석이 예약 불가 상태입니다.");
 
-        verify(userRepository, times(1)).findById(userSeq);
-        verify(seatRepository, times(1)).findById(seatId);
+        verify(userRepository).findById(userSeq);
+        verify(seatRepository).findById(seatId);
         verify(seatRepository, never()).save(any(SeatEntity.class));
         verify(reservationRepository, never()).save(any(ReservationEntity.class));
     }

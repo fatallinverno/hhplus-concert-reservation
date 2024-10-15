@@ -28,13 +28,13 @@ public class TokenServiceTest {
     @Test
     void testIssueToken() {
         Long userSeq = 1L;
-        String fakeToken = "fake.jwt.token";
+        String jwtToken = "jwt.token";
 
         // queuePosition에 어떤 값이 오더라도 fakeToken 반환
-        when(jwtUtil.generateToken(eq(userSeq), anyInt())).thenReturn(fakeToken);
+        when(jwtUtil.generateToken(eq(userSeq), anyInt())).thenReturn(jwtToken);
 
         String token = tokenService.issueToken(userSeq);
-        assertEquals(fakeToken, token);
+        assertEquals(jwtToken, token);
 
         // jwtUtil.generateToken 메서드가 호출되었는지 검증
         verify(jwtUtil, times(1)).generateToken(eq(userSeq), anyInt());
@@ -42,17 +42,17 @@ public class TokenServiceTest {
 
     @Test
     void testGetQueuePosition() {
-        String token = "fake.jwt.token";
+        String jwtToken = "jwt.token";
         int expectedQueuePosition = 42;
 
         Claims claims = mock(Claims.class);
         when(claims.get("queuePosition")).thenReturn(expectedQueuePosition);
-        when(jwtUtil.extractClaims(token)).thenReturn(claims);
+        when(jwtUtil.extractClaims(jwtToken)).thenReturn(claims);
 
-        int queuePosition = tokenService.getQueuePosition(token);
+        int queuePosition = tokenService.getQueuePosition(jwtToken);
         assertEquals(expectedQueuePosition, queuePosition);
 
-        verify(jwtUtil, times(1)).extractClaims(token);
+        verify(jwtUtil, times(1)).extractClaims(jwtToken);
     }
 
 }
