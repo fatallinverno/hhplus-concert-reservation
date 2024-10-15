@@ -9,8 +9,8 @@ import java.util.List;
 
 public interface ReservationRepository extends JpaRepository<ReservationEntity, Long> {
 
-    @Query("SELECT DISTINCT r.reservationDate FROM ReservationEntity r WHERE r.isTemporary = false")
-    List<String> findAvailableDates();
+    @Query("SELECT DISTINCT r.reservationDate FROM ReservationEntity r WHERE r.isTemporary = false AND r.concertEntity.concertId = :concertId")
+    List<String> findAvailableDatesByConcert(@Param("concertId") Long concertId);
 
     @Query("SELECT r.seatEntity.seatNumber FROM ReservationEntity r WHERE r.reservationDate = :date")
     List<Integer> findReservedSeatNumbersByDate(@Param("date") String date);
