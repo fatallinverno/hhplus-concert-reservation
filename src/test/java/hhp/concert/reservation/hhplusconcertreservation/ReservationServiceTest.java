@@ -48,7 +48,7 @@ public class ReservationServiceTest {
 
     @Test
     void testReserveSeatSuccess() {
-        String token = "fake.jwt.token";
+        String jwtToken = "jwt.token";
         Long userSeq = 1L;
         Long seatId = 1L;
         String date = "2024-10-15";
@@ -62,7 +62,7 @@ public class ReservationServiceTest {
 
         Claims claims = mock(Claims.class);
         when(claims.get("userSeq", Long.class)).thenReturn(userSeq);
-        when(jwtUtil.extractClaims(token)).thenReturn(claims);
+        when(jwtUtil.extractClaims(jwtToken)).thenReturn(claims);
         when(userRepository.findById(userSeq)).thenReturn(Optional.of(user));
         when(seatRepository.findById(seatId)).thenReturn(Optional.of(seat));
 
@@ -76,7 +76,7 @@ public class ReservationServiceTest {
 
         when(reservationRepository.save(any(ReservationEntity.class))).thenReturn(reservation);
 
-        ReservationEntity savedReservation = reservationService.reserveSeat(token, seatId, date);
+        ReservationEntity savedReservation = reservationService.reserveSeat(jwtToken, seatId, date);
         assertEquals(reservation, savedReservation);
 
         verify(userRepository).findById(userSeq);
