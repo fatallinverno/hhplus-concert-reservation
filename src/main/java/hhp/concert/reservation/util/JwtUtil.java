@@ -33,13 +33,4 @@ public class JwtUtil {
                 .getBody();
     }
 
-    public boolean isTokenValid(String token) {
-        try {
-            Claims claims = extractClaims(token);
-            return !claims.getExpiration().before(new Date());
-        } catch (JwtException e) {
-            return false;
-        }
-    }
-
 }
