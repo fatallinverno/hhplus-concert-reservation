@@ -18,7 +18,7 @@ public class TokenController {
     }
 
     // 대기 순번 조회
-    @GetMapping("/queue-position")
+    @GetMapping("/queuePosition")
     public int getQueuePosition(@RequestHeader("Authorization") String token) {
         token = token.replace("Bearer ", "");
         if (tokenService.validateToken(token)) {
