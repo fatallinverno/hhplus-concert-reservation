@@ -21,7 +21,7 @@ public class UserEntity {
     @Column
     private String userId;
 
-    @Column
+    @Column(nullable = false)
     private int pay;
 
     @OneToMany(mappedBy = "userEntity")
