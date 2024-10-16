@@ -18,6 +18,9 @@ public class TokenEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long tokenId;
 
+    @Column(nullable = false)
+    private String token;
+
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "userSeq")
     private UserEntity userEntity;
