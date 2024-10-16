@@ -20,8 +20,8 @@ public class JwtUtil {
 
         return Jwts.builder().setClaims(claims)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 5 * 60 * 1000))
-                .signWith(secretKey) // 비밀 키를 사용하여 서명
+                .setExpiration(new Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000))
+                .signWith(secretKey)
                 .compact();
     }
 
@@ -31,6 +31,10 @@ public class JwtUtil {
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
+    }
+
+    public void expirationToken(String token) {
+
     }
 
 }
