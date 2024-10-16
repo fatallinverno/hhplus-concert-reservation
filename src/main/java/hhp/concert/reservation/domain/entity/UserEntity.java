@@ -31,7 +31,7 @@ public class UserEntity {
     private List<ReservationEntity> reservationEntities;
 
     @OneToMany(mappedBy = "userEntity")
-    private List<PayHistoryEntity> payHistories;
+    private List<PaymentEntity> payHistories;
 
     public UserEntity() {}
 
