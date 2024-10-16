@@ -34,6 +34,7 @@ public class TokenServiceTest {
     }
 
     @Test
+    @DisplayName("토큰 생성")
     void testGenerateToken() {
         Long userId = 1L;
         UserEntity user = new UserEntity();
@@ -69,19 +70,19 @@ public class TokenServiceTest {
         when(userRepository.findById(userSeq2)).thenReturn(Optional.of(user2));
         when(jwtUtil.generateToken(anyLong(), anyInt())).thenReturn("mockToken");
 
-        // 첫 번째 사용자 추가 및 대기열 확인
+        // 첫 번째 사용자 추가 및 입장 가능한 큐 확인
         tokenService.generateToken(userSeq1);
-        assertEquals(1, tokenService.getWaitingQueueSize(), "첫 번째 사용자 추가 후 대기열 크기가 예상과 다릅니다.");
+        assertEquals(1, tokenService.getReadyQueueSize(), "첫 번째 사용자 추가 후 입장 가능한 큐 크기가 예상과 다릅니다.");
 
-        // 두 번째 사용자 추가 및 대기열 확인
+        // 두 번째 사용자 추가 및 입장 가능한 큐 확인
         tokenService.generateToken(userSeq2);
-        assertEquals(2, tokenService.getWaitingQueueSize(), "두 번째 사용자 추가 후 대기열 크기가 예상과 다릅니다.");
+        assertEquals(2, tokenService.getReadyQueueSize(), "두 번째 사용자 추가 후 입장 가능한 큐 크기가 예상과 다릅니다.");
 
-        // 대기열 순번 확인
-        int position1 = tokenService.getQueuePosition(userSeq1);
-        int position2 = tokenService.getQueuePosition(userSeq2);
-        assertEquals(1, position1, "첫 번째 사용자 대기열 순번이 예상과 다릅니다.");
-        assertEquals(2, position2, "두 번째 사용자 대기열 순번이 예상과 다릅니다.");
+        // 대기열 순번 확인 (ReadyQueue에서의 순번을 확인)
+        int position1 = tokenService.getReadyQueuePosition(userSeq1);
+        int position2 = tokenService.getReadyQueuePosition(userSeq2);
+        assertEquals(1, position1, "첫 번째 사용자 입장 가능한 큐 순번이 예상과 다릅니다.");
+        assertEquals(2, position2, "두 번째 사용자 입장 가능한 큐 순번이 예상과 다릅니다.");
     }
 
     @Test
