@@ -1,14 +1,17 @@
 package hhp.concert.reservation.hhplusconcertreservation;
 
 import hhp.concert.reservation.application.service.ReservationService;
+import hhp.concert.reservation.application.service.TokenService;
 import hhp.concert.reservation.domain.entity.ReservationEntity;
 import hhp.concert.reservation.domain.entity.SeatEntity;
+import hhp.concert.reservation.domain.entity.TokenEntity;
 import hhp.concert.reservation.domain.entity.UserEntity;
+import hhp.concert.reservation.infrastructure.repository.ConcertRepository;
 import hhp.concert.reservation.infrastructure.repository.ReservationRepository;
 import hhp.concert.reservation.infrastructure.repository.SeatRepository;
 import hhp.concert.reservation.infrastructure.repository.UserRepository;
-import hhp.concert.reservation.util.JwtUtil;
-import io.jsonwebtoken.Claims;
+import hhp.concert.reservation.validate.ConcertValidate;
+import hhp.concert.reservation.validate.ReservationValidate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,8 +19,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -29,7 +30,7 @@ import static org.mockito.Mockito.*;
 public class ReservationServiceTest {
 
     @Mock
-    private JwtUtil jwtUtil;
+    private TokenService tokenService;
 
     @Mock
     private UserRepository userRepository;
@@ -43,6 +44,15 @@ public class ReservationServiceTest {
     @InjectMocks
     private ReservationService reservationService;
 
+    @Mock
+    private ReservationValidate reservationValidate;
+
+    @Mock
+    private ConcertRepository concertRepository;
+
+    @Mock
+    private ConcertValidate concertValidate;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
@@ -52,13 +62,21 @@ public class ReservationServiceTest {
     @DisplayName("예약 가능 날짜 조회")
     void testGetAvailableDates() {
         Long concertId = 1L;
-        List<String> mockDates = Arrays.asList("2023-10-15", "2023-10-16", "2023-10-17");
-        when(reservationRepository.findAvailableDatesByConcert(concertId)).thenReturn(mockDates);
+        List<String> allDates = Arrays.asList("2024-10-10", "2024-10-16", "2024-10-20");
+        List<String> filteredDates = Arrays.asList("2024-10-16", "2024-10-20");
+
+        when(concertRepository.existsById(concertId)).thenReturn(true);
+        doNothing().when(concertValidate).validateConcertId(true);
+        when(reservationRepository.findAvailableDatesByConcert(concertId)).thenReturn(allDates);
+        when(concertValidate.filterPastDates(allDates)).thenReturn(filteredDates);
 
         List<String> availableDates = reservationService.findAvailableDatesByConcert(concertId);
-        assertEquals(mockDates, availableDates);
+        assertEquals(filteredDates, availableDates);
 
+        verify(concertRepository).existsById(concertId);
+        verify(concertValidate).validateConcertId(true);
         verify(reservationRepository).findAvailableDatesByConcert(concertId);
+        verify(concertValidate).filterPastDates(allDates);
     }
 
     @Test
@@ -106,41 +124,60 @@ public class ReservationServiceTest {
     @Test
     @DisplayName("좌석 예약")
     void testReserveSeat() {
-        String jwtToken = "jwt.token";
-        Long userSeq = 1L;
+        Long userId = 1L;
         Long seatId = 1L;
-        int seatNumber = 1;
-        String date = "2023-10-15";
-
         UserEntity user = new UserEntity();
-        user.setUserSeq(userSeq);
-
+        user.setUserSeq(userId);
         SeatEntity seat = new SeatEntity();
         seat.setSeatId(seatId);
-        seat.setSeatNumber(seatNumber);
         seat.setAvailable(true);
 
-        Claims claims = mock(Claims.class);
-        when(claims.get("userSeq", Long.class)).thenReturn(userSeq);
-        when(jwtUtil.extractClaims(jwtToken)).thenReturn(claims);
-        when(userRepository.findById(userSeq)).thenReturn(Optional.of(user));
+        TokenEntity token = new TokenEntity();
+        token.setUserEntity(user);
+
+        when(tokenService.getNextInQueue()).thenReturn(token);
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(seatRepository.findById(seatId)).thenReturn(Optional.of(seat));
+        when(reservationRepository.save(any(ReservationEntity.class))).thenAnswer(i -> i.getArguments()[0]);
+
+        // Mock ReservationValidate의 메서드 동작 정의
+        doNothing().when(reservationValidate).validateSeat(seat);
+
+        ReservationEntity reservation = reservationService.reserveSeat(userId, seatId);
+
+        assertEquals(user, reservation.getUserEntity());
+        assertEquals(seat, reservation.getSeatEntity());
+        assertEquals(false, reservation.isTemporary());
+        verify(seatRepository, times(1)).save(seat);
+        verify(tokenService, times(1)).processNextInQueue();
+        verify(reservationValidate, times(1)).validateSeat(seat); // ReservationValidate 호출 확인
+    }
+
+    @Test
+    void testReserveSeatNotAvailable() {
+        Long userId = 1L;
+        Long seatId = 1L;
+        UserEntity user = new UserEntity();
+        user.setUserSeq(userId);
+        SeatEntity seat = new SeatEntity();
+        seat.setSeatId(seatId);
+        seat.setAvailable(false); // 이미 예약된 좌석
+
+        TokenEntity token = new TokenEntity();
+        token.setUserEntity(user);
+
+        when(tokenService.getNextInQueue()).thenReturn(token);
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(seatRepository.findById(seatId)).thenReturn(Optional.of(seat));
 
-        ReservationEntity reservation = new ReservationEntity();
-        reservation.setReservationDate(LocalDate.parse(date));
-        reservation.setExpirationTime(LocalDateTime.now().plusMinutes(5));
-        reservation.setTemporary(true);
+        // Mock ReservationValidate의 예외 동작 정의
+        doThrow(new RuntimeException("좌석이 이미 예약되었습니다.")).when(reservationValidate).validateSeat(seat);
 
-        when(reservationRepository.save(any(ReservationEntity.class))).thenReturn(reservation);
+        Exception exception = assertThrows(RuntimeException.class, () -> {
+            reservationService.reserveSeat(userId, seatId);
+        });
 
-        ReservationEntity savedReservation = reservationService.reserveSeat(jwtToken, seatId, date);
-        assertNotNull(savedReservation);
-
-        verify(userRepository).findById(userSeq);
-        verify(seatRepository).findById(seatId);
-        verify(seatRepository).findById((long) seatNumber);
-        verify(seatRepository).save(seat);
-        verify(reservationRepository).save(any(ReservationEntity.class));
+        assertEquals("좌석이 이미 예약되었습니다.", exception.getMessage());
     }
 
 }
