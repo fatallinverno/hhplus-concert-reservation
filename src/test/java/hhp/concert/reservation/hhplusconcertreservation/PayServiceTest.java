@@ -4,6 +4,7 @@ import hhp.concert.reservation.application.service.PayService;
 import hhp.concert.reservation.domain.entity.UserEntity;
 import hhp.concert.reservation.infrastructure.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -28,6 +29,7 @@ public class PayServiceTest {
     }
 
     @Test
+    @DisplayName("잔액 조회")
     void testGetPay() {
         Long userId = 1L;
         UserEntity user = new UserEntity();
@@ -44,22 +46,23 @@ public class PayServiceTest {
     }
 
     @Test
+    @DisplayName("잔액 충전")
     void testChargePay() {
         Long userId = 1L;
         int amount = 3000;
-        UserEntity mockUser = new UserEntity();
-        mockUser.setUserSeq(userId);
-        mockUser.setUserId("test");
-        mockUser.setPay(5000);
+        UserEntity user = new UserEntity();
+        user.setUserSeq(userId);
+        user.setUserId("test");
+        user.setPay(5000);
 
-        when(userRepository.findById(userId)).thenReturn(java.util.Optional.of(mockUser));
-        when(userRepository.save(any(UserEntity.class))).thenReturn(mockUser);
+        when(userRepository.findById(userId)).thenReturn(java.util.Optional.of(user));
+        when(userRepository.save(any(UserEntity.class))).thenReturn(user);
 
         UserEntity updatedUser = payService.chargePay(userId, amount);
         assertEquals(8000, updatedUser.getPay());
 
         verify(userRepository).findById(userId);
-        verify(userRepository).save(mockUser);
+        verify(userRepository).save(user);
     }
 
 }
