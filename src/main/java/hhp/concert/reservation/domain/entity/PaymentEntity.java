@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 @Data
 @Entity
 @Table(name = "payHistory")
-public class PayHistoryEntity {
+public class PaymentEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,19 +22,17 @@ public class PayHistoryEntity {
 
     @ManyToOne
     @JoinColumn(name = "user_seq", referencedColumnName = "userSeq")
-    private UserEntity userEntity;
+    private UserEntity user;
 
     @ManyToOne
-    @JoinColumn(name = "reservation_id", referencedColumnName = "reservationId")
-    private ReservationEntity reservationEntity;
+    @JoinColumn(name = "seat_id", referencedColumnName = "seatId")
+    private SeatEntity seat;
 
     @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus;
 
     public enum PaymentStatus {
-        PENDING,
-        COMPLETED,
-        FAILED
+        PENDING, COMPLETED, FAILED
     }
 
 }
