@@ -21,6 +21,12 @@ public class TokenEntity {
     @Column(nullable = false)
     private String token;
 
+    @Column(nullable = false)
+    private String status;
+
+    @Column
+    private boolean isValid;
+
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "userSeq")
     private UserEntity userEntity;
@@ -31,5 +37,4 @@ public class TokenEntity {
 
     private LocalDateTime expirationTime;
 
-    private boolean isValid;
 }

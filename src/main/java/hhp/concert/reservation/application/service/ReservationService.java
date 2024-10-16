@@ -98,33 +98,6 @@ public class ReservationService {
         return reservationRepository.save(reservation);
     }
 
-//    public ReservationEntity reserveSeat(String token, Long seatId, String date) {
-//        Claims claims = jwtUtil.extractClaims(token);
-//        Long userSeq = claims.get("userSeq", Long.class);
-//
-//        UserEntity user = userRepository.findById(userSeq)
-//                .orElseThrow(() -> new RuntimeException("유저가 없습니다."));
-//        SeatEntity seat = seatRepository.findById(seatId)
-//                .orElseThrow(() -> new RuntimeException("좌석이 없습니다."));
-//
-//        reservationValidate.validateSeat(seat);
-//
-//        ReservationEntity reservation = new ReservationEntity();
-//        reservation.setUserEntity(user);
-//        reservation.setSeatEntity(seat);
-//        reservation.setReservationDate(LocalDate.parse(date));
-//        reservation.setExpirationTime(LocalDateTime.now().plusMinutes(5)); // 5분 임시 배정
-//        reservation.setTemporary(true);
-//
-//        seat.setAvailable(false);
-//        seatRepository.save(seat);
-//        ReservationEntity savedReservation = reservationRepository.save(reservation);
-//
-//        scheduler.schedule(() -> releaseTemporaryReservation(savedReservation.getReservationId()), 5, TimeUnit.MINUTES);
-//
-//        return savedReservation;
-//    }
-
     private void releaseTemporaryReservation(Long reservationId) {
         Optional<ReservationEntity> reservationOpt = reservationRepository.findById(reservationId);
         reservationOpt.ifPresent(reservation -> {

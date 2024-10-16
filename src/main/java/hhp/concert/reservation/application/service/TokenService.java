@@ -3,6 +3,7 @@ package hhp.concert.reservation.application.service;
 
 import hhp.concert.reservation.domain.entity.TokenEntity;
 import hhp.concert.reservation.domain.entity.UserEntity;
+import hhp.concert.reservation.infrastructure.repository.TokenRepository;
 import hhp.concert.reservation.infrastructure.repository.UserRepository;
 import hhp.concert.reservation.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.LinkedList;
+import java.util.Optional;
 import java.util.Queue;
 
 @Service
@@ -25,38 +27,62 @@ public class TokenService {
     @Autowired
     private UserRepository userRepository;
 
-    public TokenEntity generateToken(Long userId) {
-        UserEntity user = userRepository.findById(userId)
+    @Autowired
+    private TokenRepository tokenRepository;
+
+    public TokenEntity generateToken(Long userSeq) {
+        UserEntity user = userRepository.findById(userSeq)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
-        int queuePosition = waitingQueue.size() + 1;
+        Optional<TokenEntity> existingTokenOpt = tokenRepository.findByUserEntityUserSeqAndStatus(userSeq, "complete");
+
+        if (existingTokenOpt.isPresent()) {
+            return refreshToken(existingTokenOpt.get());
+        }
+
         TokenEntity token = new TokenEntity();
-        token.setUserEntity(user);  // UserEntity 설정
-        token.setToken(jwtUtil.generateToken(userId, queuePosition));
-        token.setQueuePosition(queuePosition);
+        token.setUserEntity(user);
+        token.setToken(jwtUtil.generateToken(userSeq, waitingQueue.size() + 1));
         token.setIssuedAt(LocalDateTime.now());
         token.setExpirationTime(LocalDateTime.now().plusMinutes(5));
-        token.setValid(true);
+        token.setStatus("pending");
 
-        // 대기열에 추가
         waitingQueue.add(token);
-        System.out.println("Added to waitingQueue: User ID " + userId + ", Current waiting size: " + waitingQueue.size());
 
-        // 입장 가능한 큐로 이동
+        int queuePosition = waitingQueue.size();
+        token.setQueuePosition(queuePosition);
+
+        tokenRepository.save(token);
+
         if (readyQueue.size() < MAX_READY_QUEUE_SIZE) {
             moveToReadyQueue();
-            System.out.println("Moved to readyQueue. Current ready size: " + readyQueue.size());
         }
 
         return token;
     }
 
+    private TokenEntity refreshToken(TokenEntity existingToken) {
+        existingToken.setIssuedAt(LocalDateTime.now());
+        existingToken.setExpirationTime(LocalDateTime.now().plusMinutes(5));
+        existingToken.setToken(jwtUtil.generateToken(existingToken.getUserEntity().getUserSeq(), existingToken.getQueuePosition()));
+        existingToken.setStatus("pending");
+        return tokenRepository.save(existingToken);
+    }
+
+    public void completeToken(Long tokenId) {
+        TokenEntity token = tokenRepository.findById(tokenId)
+                .orElseThrow(() -> new RuntimeException("토큰을 찾을 수 없습니다."));
+        token.setStatus("complete");
+        tokenRepository.save(token);
+    }
+
     private void moveToReadyQueue() {
-        if (waitingQueue.isEmpty()) {
-            return;
+        while (readyQueue.size() < MAX_READY_QUEUE_SIZE && !waitingQueue.isEmpty()) {
+            TokenEntity nextToken = waitingQueue.poll();
+            if (nextToken != null) {
+                readyQueue.add(nextToken);
+            }
         }
-        TokenEntity nextToken = waitingQueue.poll();
-        readyQueue.add(nextToken);
     }
 
     public TokenEntity getNextInQueue() {
@@ -68,21 +94,10 @@ public class TokenService {
         moveToReadyQueue();
     }
 
-    public int getQueuePosition(Long userId) {
+    public int getQueuePosition(Long userSeq) {
         int position = 1;
         for (TokenEntity token : waitingQueue) {
-            if (token.getUserEntity().getUserSeq().equals(userId)) {
-                return position;
-            }
-            position++;
-        }
-        return -1;
-    }
-
-    public int getReadyQueuePosition(Long userId) {
-        int position = 1;
-        for (TokenEntity token : readyQueue) {
-            if (token.getUserEntity().getUserSeq().equals(userId)) {
+            if (token.getUserEntity().getUserSeq().equals(userSeq)) {
                 return position;
             }
             position++;

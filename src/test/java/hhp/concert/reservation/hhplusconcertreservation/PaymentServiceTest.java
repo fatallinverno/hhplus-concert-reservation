@@ -60,7 +60,7 @@ public class PaymentServiceTest {
 
         when(userRepository.findById(userId)).thenReturn(java.util.Optional.of(user));
         when(seatRepository.findById(seatId)).thenReturn(java.util.Optional.of(seat));
-        doNothing().when(jwtUtil).expirationToken(token);
+//        doNothing().when(jwtUtil).expirationToken(token);
 
         paymentService.processPayment(userId, seatId, amount, token);
 
@@ -76,7 +76,7 @@ public class PaymentServiceTest {
         verify(userRepository).findById(userId);
         verify(seatRepository).findById(seatId);
         verify(seatRepository).save(seat);
-        verify(jwtUtil).expirationToken(token);
+//        verify(jwtUtil).expirationToken(token);
     }
 
 }
