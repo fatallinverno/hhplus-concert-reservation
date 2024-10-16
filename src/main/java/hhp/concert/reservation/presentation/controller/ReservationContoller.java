@@ -24,10 +24,9 @@ public class ReservationContoller {
         return reservationService.getAvailableSeats(date);
     }
 
-    @PostMapping
-    public ReservationEntity reserveSeat(@RequestHeader("Authorization") String token, @RequestParam Long seatId, @RequestParam String date) {
-        token = token.replace("Bearer ", "");
-        return reservationService.reserveSeat(token, seatId, date);
+    @PostMapping("/reserve")
+    public ReservationEntity reserveSeat(@RequestParam Long userId, @RequestParam Long seatId) {
+        return reservationService.reserveSeat(userId, seatId);
     }
 
 }

@@ -2,6 +2,7 @@ package hhp.concert.reservation.application.service;
 
 import hhp.concert.reservation.domain.entity.ReservationEntity;
 import hhp.concert.reservation.domain.entity.SeatEntity;
+import hhp.concert.reservation.domain.entity.TokenEntity;
 import hhp.concert.reservation.domain.entity.UserEntity;
 import hhp.concert.reservation.infrastructure.repository.ConcertRepository;
 import hhp.concert.reservation.infrastructure.repository.ReservationRepository;
@@ -41,6 +42,9 @@ public class ReservationService {
     @Autowired
     private SeatRepository seatRepository;
 
+    @Autowired
+    private TokenService tokenService;
+
     private ReservationValidate reservationValidate;
 
     private ConcertValidate concertValidate;
@@ -66,32 +70,60 @@ public class ReservationService {
                 .collect(Collectors.toList());
     }
 
-    public ReservationEntity reserveSeat(String token, Long seatId, String date) {
-        Claims claims = jwtUtil.extractClaims(token);
-        Long userSeq = claims.get("userSeq", Long.class);
+    public ReservationEntity reserveSeat(Long userId, Long seatId) {
+        TokenEntity nextUserToken = tokenService.getNextInQueue();
+        if (nextUserToken == null || !nextUserToken.getUserEntity().getUserSeq().equals(userId)) {
+            throw new RuntimeException("현재 예약을 진행할 차례가 아닙니다.");
+        }
 
-        UserEntity user = userRepository.findById(userSeq)
-                .orElseThrow(() -> new RuntimeException("유저가 없습니다."));
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
         SeatEntity seat = seatRepository.findById(seatId)
-                .orElseThrow(() -> new RuntimeException("좌석이 없습니다."));
+                .orElseThrow(() -> new RuntimeException("좌석을 찾을 수 없습니다."));
 
         reservationValidate.validateSeat(seat);
+
+        seat.setAvailable(false);
+        seatRepository.save(seat);
+
+        tokenService.processNextInQueue();
 
         ReservationEntity reservation = new ReservationEntity();
         reservation.setUserEntity(user);
         reservation.setSeatEntity(seat);
-        reservation.setReservationDate(LocalDate.parse(date));
-        reservation.setExpirationTime(LocalDateTime.now().plusMinutes(5)); // 5분 임시 배정
-        reservation.setTemporary(true);
+        reservation.setReservationDate(LocalDate.now());
+        reservation.setExpirationTime(LocalDateTime.now().plusMinutes(5));
+        reservation.setTemporary(false);
 
-        seat.setAvailable(false);
-        seatRepository.save(seat);
-        ReservationEntity savedReservation = reservationRepository.save(reservation);
-
-        scheduler.schedule(() -> releaseTemporaryReservation(savedReservation.getReservationId()), 5, TimeUnit.MINUTES);
-
-        return savedReservation;
+        return reservationRepository.save(reservation);
     }
+
+//    public ReservationEntity reserveSeat(String token, Long seatId, String date) {
+//        Claims claims = jwtUtil.extractClaims(token);
+//        Long userSeq = claims.get("userSeq", Long.class);
+//
+//        UserEntity user = userRepository.findById(userSeq)
+//                .orElseThrow(() -> new RuntimeException("유저가 없습니다."));
+//        SeatEntity seat = seatRepository.findById(seatId)
+//                .orElseThrow(() -> new RuntimeException("좌석이 없습니다."));
+//
+//        reservationValidate.validateSeat(seat);
+//
+//        ReservationEntity reservation = new ReservationEntity();
+//        reservation.setUserEntity(user);
+//        reservation.setSeatEntity(seat);
+//        reservation.setReservationDate(LocalDate.parse(date));
+//        reservation.setExpirationTime(LocalDateTime.now().plusMinutes(5)); // 5분 임시 배정
+//        reservation.setTemporary(true);
+//
+//        seat.setAvailable(false);
+//        seatRepository.save(seat);
+//        ReservationEntity savedReservation = reservationRepository.save(reservation);
+//
+//        scheduler.schedule(() -> releaseTemporaryReservation(savedReservation.getReservationId()), 5, TimeUnit.MINUTES);
+//
+//        return savedReservation;
+//    }
 
     private void releaseTemporaryReservation(Long reservationId) {
         Optional<ReservationEntity> reservationOpt = reservationRepository.findById(reservationId);
