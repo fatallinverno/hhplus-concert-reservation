@@ -39,6 +39,9 @@ public class PaymentServiceTest {
     @Mock
     private TokenService tokenService;
 
+    @Mock
+    private ConcertRepository concertRepository;
+
     @InjectMocks
     private PaymentService paymentService;
 
@@ -52,7 +55,6 @@ public class PaymentServiceTest {
     void testProcessPayment() {
         Long userId = 1L;
         Long concertId = 1L;
-        Long reservationId = 1L;
         Long seatId = 1L;
         int amount = 1000;
         String token = "TokenTest";
@@ -76,33 +78,37 @@ public class PaymentServiceTest {
         tokenEntity.setStatus("pending");
 
         ReservationEntity reservation = new ReservationEntity();
-        reservation.setReservationId(reservationId);
         reservation.setUserEntity(user);
         reservation.setSeatEntity(seat);
+        reservation.setConcertEntity(concert);
         reservation.setTemporary(true);
         reservation.setExpirationTime(LocalDateTime.now().minusMinutes(1));
 
+        // Mock 설정
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(reservationRepository.findById(reservationId)).thenReturn(Optional.of(reservation));
+        when(concertRepository.findById(concertId)).thenReturn(Optional.of(concert));
         when(seatRepository.findById(seatId)).thenReturn(Optional.of(seat));
         when(tokenRepository.findByToken(token)).thenReturn(Optional.of(tokenEntity));
         when(reservationRepository.findByUserEntityAndConcertEntityAndSeatEntityAndIsTemporary(user, concert, seat, true))
                 .thenReturn(Optional.of(reservation));
 
-        paymentService.processPayment(userId, reservationId, seatId, amount, token);
+        paymentService.processPayment(userId, concertId, seatId, amount, token);
 
+        // 결제 내역 확인
         ArgumentCaptor<PaymentEntity> paymentCaptor = ArgumentCaptor.forClass(PaymentEntity.class);
         verify(paymentRepository).save(paymentCaptor.capture());
-
         PaymentEntity savedPayment = paymentCaptor.getValue();
-        assertEquals(amount, savedPayment.getAmount());
-        assertEquals(user, savedPayment.getUserEntity());
-        assertEquals(reservation, savedPayment.getReservationEntity());
-        assertEquals(seat, savedPayment.getSeat());
-        assertEquals(PaymentEntity.PaymentStatus.COMPLETED, savedPayment.getPaymentStatus());
 
-        assertFalse(seat.isAvailable());
+        assertEquals(amount, savedPayment.getAmount(), "결제 금액이 일치하지 않습니다.");
+        assertEquals(user, savedPayment.getUserEntity(), "사용자가 일치하지 않습니다.");
+        assertEquals(seat, savedPayment.getSeat(), "좌석이 일치하지 않습니다.");
+        assertEquals(PaymentEntity.PaymentStatus.COMPLETED, savedPayment.getPaymentStatus(), "결제 상태가 일치하지 않습니다.");
+
+        // 좌석 예약 상태 확인
+        assertFalse(seat.isAvailable(), "좌석이 예약 상태로 변경되지 않았습니다.");
         verify(seatRepository).save(seat);
+
+        // 토큰 완료 상태 확인
         verify(tokenService).completeToken(tokenEntity.getTokenId());
     }
 
