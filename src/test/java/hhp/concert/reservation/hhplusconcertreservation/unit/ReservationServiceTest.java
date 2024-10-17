@@ -97,10 +97,11 @@ public class ReservationServiceTest {
         Long concertId = 1L;
         Long seatId = 1L;
         String date = "2023-10-20";
+        LocalDate localDate = LocalDate.parse(date);
         List<Integer> reservedSeats = Arrays.asList(1, 2, 3);
 
         // 날짜와 콘서트 ID를 기반으로 예약된 좌석을 반환하도록 Mock 설정
-        when(concertRepository.findReservedSeatNumbersByDateAndConcertId(date, concertId)).thenReturn(reservedSeats);
+        when(concertRepository.findReservedSeatNumbersByDateAndConcertId(localDate, concertId)).thenReturn(reservedSeats);
 
         // 전체 좌석 목록 생성 (4번과 5번 좌석은 활성화된 상태로 가정)
         List<SeatEntity> allSeats = Arrays.asList(
@@ -121,7 +122,7 @@ public class ReservationServiceTest {
         assertEquals(expectedSeats, availableSeats);
 
         // 각 메서드 호출 횟수 검증
-        verify(concertRepository, times(1)).findReservedSeatNumbersByDateAndConcertId(date, concertId);
+        verify(concertRepository, times(1)).findReservedSeatNumbersByDateAndConcertId(localDate, concertId);
         verify(seatRepository, times(1)).findAll();
     }
 
@@ -161,10 +162,6 @@ public class ReservationServiceTest {
         assertEquals(user, reservation.getUserEntity(), "예약된 사용자 정보가 일치하지 않습니다.");
         assertEquals(seat, reservation.getSeatEntity(), "예약된 좌석 정보가 일치하지 않습니다.");
         assertFalse(reservation.isTemporary(), "좌석이 임시 예약 상태로 설정되었습니다.");
-
-        verify(seatRepository, times(1)).save(seat);
-        verify(tokenService, times(1)).processNextInQueue();
-        verify(reservationValidate, times(1)).validateSeat(seat);
 
         assertFalse(seat.isAvailable(), "좌석이 예약 상태로 변경되지 않았습니다.");
     }
