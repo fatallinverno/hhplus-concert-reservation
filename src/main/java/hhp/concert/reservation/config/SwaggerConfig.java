@@ -13,9 +13,9 @@ public class SwaggerConfig {
 
     @Bean
     public Docket api() {
-        return new Docket(DocumentationType.SWAGGER_2)
+        return new Docket(DocumentationType.OAS_30)
                 .select()
-                .apis(RequestHandlerSelectors.basePackage("hhp.concert.reservation")) // 패키지 경로를 API 경로로 설정
+                .apis(RequestHandlerSelectors.basePackage("hhp.concert.reservation.presentation.controller"))
                 .build();
     }
 
