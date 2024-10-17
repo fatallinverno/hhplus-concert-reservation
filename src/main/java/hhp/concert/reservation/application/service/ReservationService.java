@@ -65,7 +65,8 @@ public class ReservationService {
 
         return seatRepository.findAll()
                 .stream()
-                .map(seat -> seat.getSeatNumber())
+                .filter(SeatEntity::isAvailable) // 활성화된 좌석만 필터링
+                .map(SeatEntity::getSeatNumber)
                 .filter(seatNumber -> !reservedSeats.contains(seatNumber))
                 .collect(Collectors.toList());
     }
@@ -96,19 +97,6 @@ public class ReservationService {
         reservation.setTemporary(false);
 
         return reservationRepository.save(reservation);
-    }
-
-    private void releaseTemporaryReservation(Long reservationId) {
-        Optional<ReservationEntity> reservationOpt = reservationRepository.findById(reservationId);
-        reservationOpt.ifPresent(reservation -> {
-            if (reservation.isTemporary() && reservation.getExpirationTime().isBefore(LocalDateTime.now())) {
-                SeatEntity seat = reservation.getSeatEntity();
-                seat.setAvailable(true); // 좌석을 예약 가능 상태로 변경
-                seatRepository.save(seat);
-                reservationRepository.delete(reservation); // 임시 예약 삭제
-                System.out.println("임시 예약이 해제되었습니다. 좌석 ID: " + seat.getSeatId());
-            }
-        });
     }
 
 }
