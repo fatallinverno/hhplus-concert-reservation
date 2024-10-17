@@ -78,7 +78,7 @@ public class PaymentServiceTest {
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(seatRepository.findById(seatId)).thenReturn(Optional.of(seat));
         when(tokenRepository.findByToken(token)).thenReturn(Optional.of(tokenEntity));
-        when(reservationRepository.findByUserEntityAndSeatEntityAndTemporary(user, seat, true))
+        when(reservationRepository.findByUserEntityAndSeatEntityAndIsTemporary(user, seat, true))
                 .thenReturn(Optional.of(reservation));
 
         paymentService.processPayment(userId, seatId, amount, token);
@@ -88,7 +88,7 @@ public class PaymentServiceTest {
 
         PaymentEntity savedPayment = paymentCaptor.getValue();
         assertEquals(amount, savedPayment.getAmount());
-        assertEquals(user, savedPayment.getUser());
+        assertEquals(user, savedPayment.getUserEntity());
         assertEquals(seat, savedPayment.getSeat());
         assertEquals(PaymentEntity.PaymentStatus.COMPLETED, savedPayment.getPaymentStatus());
 

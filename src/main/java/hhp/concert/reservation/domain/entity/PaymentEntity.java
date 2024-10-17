@@ -22,7 +22,7 @@ public class PaymentEntity {
 
     @ManyToOne
     @JoinColumn(name = "user_seq", referencedColumnName = "userSeq")
-    private UserEntity user;
+    private UserEntity userEntity;
 
     @ManyToOne
     @JoinColumn(name = "seat_id", referencedColumnName = "seatId")

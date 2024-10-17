@@ -31,12 +31,6 @@ public class UserEntity {
     private List<ReservationEntity> reservationEntities;
 
     @OneToMany(mappedBy = "userEntity")
-    private List<PaymentEntity> payHistories;
-
-    public UserEntity() {}
-
-    public UserEntity(Long userSeq) {
-        this.userSeq = userSeq;
-    }
+    private List<PaymentEntity> paymentEntities;
 
 }

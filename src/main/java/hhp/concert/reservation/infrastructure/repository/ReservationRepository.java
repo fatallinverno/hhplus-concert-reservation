@@ -18,5 +18,5 @@ public interface ReservationRepository extends JpaRepository<ReservationEntity, 
     @Query("SELECT r.seatEntity.seatNumber FROM ReservationEntity r WHERE r.reservationDate = :date")
     List<Integer> findReservedSeatNumbersByDate(@Param("date") String date);
 
-    Optional<ReservationEntity> findByUserEntityAndSeatEntityAndTemporary(UserEntity userEntity, SeatEntity seatEntity, boolean temporary);
+    Optional<ReservationEntity> findByUserEntityAndSeatEntityAndIsTemporary(UserEntity userEntity, SeatEntity seatEntity, boolean isTemporary);
 }

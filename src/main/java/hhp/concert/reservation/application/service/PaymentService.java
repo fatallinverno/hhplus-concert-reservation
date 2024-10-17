@@ -36,7 +36,7 @@ public class PaymentService {
                 .orElseThrow(() -> new RuntimeException("좌석을 찾을 수 없습니다."));
 
         PaymentEntity payment = new PaymentEntity();
-        payment.setUser(user);
+        payment.setUserEntity(user);
         payment.setSeat(seat);
         payment.setAmount(amount);
         payment.setPaymentTime(LocalDateTime.now());
@@ -55,7 +55,7 @@ public class PaymentService {
 
         // 임시 예약 해제
         Optional<ReservationEntity> tempReservationOpt = reservationRepository
-                .findByUserEntityAndSeatEntityAndTemporary(user, seat, true);
+                .findByUserEntityAndSeatEntityAndIsTemporary(user, seat, true);
 
         tempReservationOpt.ifPresent(tempReservation -> {
             releaseTemporaryReservation(tempReservation.getReservationId());
