@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -50,13 +51,19 @@ public class PaymentServiceTest {
     @DisplayName("결제 처리 후 결제 내역 생성 및 토큰 만료")
     void testProcessPayment() {
         Long userId = 1L;
+        Long concertId = 1L;
+        Long reservationId = 1L;
         Long seatId = 1L;
         int amount = 1000;
         String token = "TokenTest";
 
         UserEntity user = new UserEntity();
-        user.setUserSeq(userId);
-        user.setUserId("testUser");
+        user.setUserId(userId);
+        user.setUserName("testUser");
+
+        ConcertEntity concert = new ConcertEntity();
+        concert.setConcertId(concertId);
+        concert.setConcertName("testConcert");
 
         SeatEntity seat = new SeatEntity();
         seat.setSeatId(seatId);
@@ -69,19 +76,20 @@ public class PaymentServiceTest {
         tokenEntity.setStatus("pending");
 
         ReservationEntity reservation = new ReservationEntity();
-        reservation.setReservationId(1L);
+        reservation.setReservationId(reservationId);
         reservation.setUserEntity(user);
         reservation.setSeatEntity(seat);
         reservation.setTemporary(true);
         reservation.setExpirationTime(LocalDateTime.now().minusMinutes(1));
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(reservationRepository.findById(reservationId)).thenReturn(Optional.of(reservation));
         when(seatRepository.findById(seatId)).thenReturn(Optional.of(seat));
         when(tokenRepository.findByToken(token)).thenReturn(Optional.of(tokenEntity));
-        when(reservationRepository.findByUserEntityAndSeatEntityAndIsTemporary(user, seat, true))
+        when(reservationRepository.findByUserEntityAndConcertEntityAndSeatEntityAndIsTemporary(user, concert, seat, true))
                 .thenReturn(Optional.of(reservation));
 
-        paymentService.processPayment(userId, seatId, amount, token);
+        paymentService.processPayment(userId, reservationId, seatId, amount, token);
 
         ArgumentCaptor<PaymentEntity> paymentCaptor = ArgumentCaptor.forClass(PaymentEntity.class);
         verify(paymentRepository).save(paymentCaptor.capture());
@@ -89,6 +97,7 @@ public class PaymentServiceTest {
         PaymentEntity savedPayment = paymentCaptor.getValue();
         assertEquals(amount, savedPayment.getAmount());
         assertEquals(user, savedPayment.getUserEntity());
+        assertEquals(reservation, savedPayment.getReservationEntity());
         assertEquals(seat, savedPayment.getSeat());
         assertEquals(PaymentEntity.PaymentStatus.COMPLETED, savedPayment.getPaymentStatus());
 
