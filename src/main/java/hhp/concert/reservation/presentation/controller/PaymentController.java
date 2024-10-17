@@ -2,20 +2,24 @@ package hhp.concert.reservation.presentation.controller;
 
 import hhp.concert.reservation.application.service.PaymentService;
 import hhp.concert.reservation.domain.entity.PaymentEntity;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api")
+@Tag(name = "Payment Controller", description = "결제 API")
 public class PaymentController {
 
     @Autowired
     private PaymentService paymentService;
 
     @PostMapping("/payment")
-    public PaymentEntity processPayment(@RequestParam Long userId, @RequestParam Long seatId, @RequestParam int amount, @RequestHeader("Authorization") String token) {
+    @Operation(summary = "결제", description = "콘서트 결제를 합니다.")
+    public PaymentEntity processPayment(@RequestParam Long userId, @RequestParam Long concertId, @RequestParam Long seatId, @RequestParam int amount, String token) {
         token = token.replace("Bearer ", "");
-        return paymentService.processPayment(userId, seatId, amount, token);
+        return paymentService.processPayment(userId, concertId, seatId, amount, token);
     }
 
 }
