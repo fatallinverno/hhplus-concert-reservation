@@ -12,12 +12,11 @@ public class TokenValidate {
 
     private JwtUtil jwtUtil;
 
-    public boolean validateToken(String token) {
-        if(token != null) {
-            return isTokenValid(token);
-        } else {
-            throw new IllegalArgumentException("token값이 없습니다.");
+    public boolean validateToken(String token, Long userId) {
+        if(!jwtUtil.validateToken(token, userId)) {
+            throw new RuntimeException("유효하지 않은 토큰입니다.");
         }
+        return false;
     }
 
     public boolean isTokenValid(String token) {
