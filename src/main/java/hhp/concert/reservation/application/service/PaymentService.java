@@ -28,15 +28,20 @@ public class PaymentService {
 
     @Autowired
     private ReservationRepository reservationRepository;
+    @Autowired
+    private ConcertRepository concertRepository;
 
-    public PaymentEntity processPayment(Long userSeq, Long seatId, int amount, String token) {
-        UserEntity user = userRepository.findById(userSeq)
+    public PaymentEntity processPayment(Long userId, Long concertId, Long seatId, int amount, String token) {
+        UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+        ConcertEntity concert = concertRepository.findById(concertId)
+                .orElseThrow(() -> new RuntimeException("콘서트를 찾을 수 없습니다."));
         SeatEntity seat = seatRepository.findById(seatId)
                 .orElseThrow(() -> new RuntimeException("좌석을 찾을 수 없습니다."));
 
         PaymentEntity payment = new PaymentEntity();
         payment.setUserEntity(user);
+        payment.setConcertEntity(concert);
         payment.setSeat(seat);
         payment.setAmount(amount);
         payment.setPaymentTime(LocalDateTime.now());
@@ -55,7 +60,7 @@ public class PaymentService {
 
         // 임시 예약 해제
         Optional<ReservationEntity> tempReservationOpt = reservationRepository
-                .findByUserEntityAndSeatEntityAndIsTemporary(user, seat, true);
+                .findByUserEntityAndConcertEntityAndSeatEntityAndIsTemporary(user, concert, seat, true);
 
         tempReservationOpt.ifPresent(tempReservation -> {
             releaseTemporaryReservation(tempReservation.getReservationId());

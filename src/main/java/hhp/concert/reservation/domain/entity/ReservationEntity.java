@@ -29,7 +29,7 @@ public class ReservationEntity {
     private boolean isTemporary;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "userSeq")
+    @JoinColumn(name = "user_id")
     private UserEntity userEntity;
 
     @ManyToOne

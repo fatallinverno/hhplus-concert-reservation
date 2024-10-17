@@ -28,7 +28,7 @@ public class TokenEntity {
     private boolean isValid;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "userSeq")
+    @JoinColumn(name = "user_id", referencedColumnName = "userId")
     private UserEntity userEntity;
 
     private int queuePosition;

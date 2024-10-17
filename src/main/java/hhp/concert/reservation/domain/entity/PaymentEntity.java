@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 
 @Data
 @Entity
-@Table(name = "payHistory")
+@Table(name = "payment")
 public class PaymentEntity {
 
     @Id
@@ -21,8 +21,16 @@ public class PaymentEntity {
     private LocalDateTime paymentTime;
 
     @ManyToOne
-    @JoinColumn(name = "user_seq", referencedColumnName = "userSeq")
+    @JoinColumn(name = "user_Id", referencedColumnName = "userId")
     private UserEntity userEntity;
+
+    @ManyToOne
+    @JoinColumn(name = "concert_Id", referencedColumnName = "concertId")
+    private ConcertEntity concertEntity;
+
+    @ManyToOne
+    @JoinColumn(name = "reservation_Id", referencedColumnName = "reservationId")
+    private ReservationEntity reservationEntity;
 
     @ManyToOne
     @JoinColumn(name = "seat_id", referencedColumnName = "seatId")

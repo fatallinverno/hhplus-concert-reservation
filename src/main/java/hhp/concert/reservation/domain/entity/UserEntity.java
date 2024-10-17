@@ -16,10 +16,10 @@ public class UserEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long userSeq;
+    private Long userId;
 
     @Column
-    private String userId;
+    private String userName;
 
     @Column(nullable = false)
     private int pay;

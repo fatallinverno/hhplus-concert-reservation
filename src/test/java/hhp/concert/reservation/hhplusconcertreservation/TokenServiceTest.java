@@ -46,29 +46,29 @@ public class TokenServiceTest {
     @Test
     @DisplayName("토큰 생성 및 클레임 검증")
     void testGenerateToken() {
-        Long userSeq = 1L;
+        Long userId = 1L;
         int queuePosition = 1;
 
-        when(jwtUtil.generateToken(userSeq, queuePosition)).thenReturn("jwtToken");
+        when(jwtUtil.generateToken(userId, queuePosition)).thenReturn("jwtToken");
 
-        String token = jwtUtil.generateToken(userSeq, queuePosition);
+        String token = jwtUtil.generateToken(userId, queuePosition);
         assertNotNull(token);
 
-        when(jwtUtil.extractClaims("jwtToken")).thenReturn(createMockClaims(userSeq, queuePosition));
+        when(jwtUtil.extractClaims("jwtToken")).thenReturn(createMockClaims(userId, queuePosition));
 
         Claims claims = jwtUtil.extractClaims(token);
-        assertEquals(userSeq, claims.get("userSeq", Long.class));
+        assertEquals(userId, claims.get("userId", Long.class));
     }
 
     @Test
     @DisplayName("토큰 만료 검증")
     void testIsTokenExpired() {
-        Long userSeq = 1L;
+        Long userId = 1L;
         int queuePosition = 1;
 
-        when(jwtUtil.generateToken(userSeq, queuePosition)).thenReturn("mockToken");
+        when(jwtUtil.generateToken(userId, queuePosition)).thenReturn("mockToken");
 
-        String token = jwtUtil.generateToken(userSeq, queuePosition);
+        String token = jwtUtil.generateToken(userId, queuePosition);
         when(jwtUtil.isTokenExpired("mockToken")).thenReturn(false);
 
         assertFalse(jwtUtil.isTokenExpired(token));
@@ -77,36 +77,36 @@ public class TokenServiceTest {
     @Test
     @DisplayName("토큰 유효성 검증")
     void testValidateToken() {
-        Long userSeq = 1L;
+        Long userId = 1L;
         int queuePosition = 1;
 
-        when(jwtUtil.generateToken(userSeq, queuePosition)).thenReturn("mockToken");
-        when(jwtUtil.validateToken("mockToken", userSeq)).thenReturn(true);
+        when(jwtUtil.generateToken(userId, queuePosition)).thenReturn("mockToken");
+        when(jwtUtil.validateToken("mockToken", userId)).thenReturn(true);
 
-        String token = jwtUtil.generateToken(userSeq, queuePosition);
+        String token = jwtUtil.generateToken(userId, queuePosition);
 
-        assertTrue(jwtUtil.validateToken(token, userSeq));
+        assertTrue(jwtUtil.validateToken(token, userId));
     }
 
     @Test
     @DisplayName("대기열 순번 조회")
     void testGetQueuePosition() {
         for (int i = 1; i <= 60; i++) {
-            Long userSeq = (long) i;
+            Long userId = (long) i;
             UserEntity user = new UserEntity();
-            user.setUserSeq(userSeq);
+            user.setUserId(userId);
 
-            when(userRepository.findById(userSeq)).thenReturn(Optional.of(user));
+            when(userRepository.findById(userId)).thenReturn(Optional.of(user));
             when(jwtUtil.generateToken(anyLong(), anyInt())).thenReturn("mockToken" + i);
             when(tokenRepository.save(any(TokenEntity.class))).thenAnswer(invocation -> invocation.getArguments()[0]);
 
-            tokenService.generateToken(userSeq);
+            tokenService.generateToken(userId);
         }
 
         // waitingQueue에 있는 사용자(51~60)의 대기열 순번 확인
         for (int i = 51; i <= 60; i++) {
-            Long userSeq = (long) i;
-            assertEquals(i - 50, tokenService.getQueuePosition(userSeq));
+            Long userId = (long) i;
+            assertEquals(i - 50, tokenService.getQueuePosition(userId));
         }
     }
 
@@ -114,24 +114,24 @@ public class TokenServiceTest {
     @DisplayName("대기열에서 입장 큐로 이동")
     void testMoveToReadyQueue() {
         for (int i = 1; i <= 60; i++) {
-            Long userSeq = (long) i;
+            Long userId = (long) i;
             UserEntity user = new UserEntity();
-            user.setUserSeq(userSeq);
+            user.setUserId(userId);
 
-            when(userRepository.findById(userSeq)).thenReturn(Optional.of(user));
+            when(userRepository.findById(userId)).thenReturn(Optional.of(user));
             when(jwtUtil.generateToken(anyLong(), anyInt())).thenReturn("jwtToken" + i);
             when(tokenRepository.save(any(TokenEntity.class))).thenAnswer(invocation -> invocation.getArguments()[0]);
 
-            tokenService.generateToken(userSeq);
+            tokenService.generateToken(userId);
         }
 
         assertEquals(50, tokenService.getReadyQueueSize());
         assertEquals(10, tokenService.getWaitingQueueSize());
     }
 
-    private Claims createMockClaims(Long userSeq, int queuePosition) {
+    private Claims createMockClaims(Long userId, int queuePosition) {
         Claims claims = Jwts.claims();
-        claims.put("userSeq", userSeq);
+        claims.put("userId", userId);
         claims.put("queuePosition", queuePosition);
         claims.put("status", "pending");
         return claims;

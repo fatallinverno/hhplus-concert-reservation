@@ -33,8 +33,8 @@ public class PayServiceTest {
     void testGetPay() {
         Long userId = 1L;
         UserEntity user = new UserEntity();
-        user.setUserSeq(userId);
-        user.setUserId("test");
+        user.setUserId(userId);
+        user.setUserName("test");
         user.setPay(5000);
 
         when(userRepository.findById(userId)).thenReturn(java.util.Optional.of(user));
@@ -51,8 +51,8 @@ public class PayServiceTest {
         Long userId = 1L;
         int amount = 3000;
         UserEntity user = new UserEntity();
-        user.setUserSeq(userId);
-        user.setUserId("test");
+        user.setUserId(userId);
+        user.setUserName("test");
         user.setPay(5000);
 
         when(userRepository.findById(userId)).thenReturn(java.util.Optional.of(user));

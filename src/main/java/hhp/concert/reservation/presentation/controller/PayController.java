@@ -19,14 +19,14 @@ public class PayController {
 
     @GetMapping("/{userId}/pay")
     @Operation(summary = "잔액 조회", description = "유저의 잔액을 조회합니다.")
-    public int getPay(@Parameter(description = "조회할 유저의 ID") @PathVariable Long userSeq) {
-        return payService.getPay(userSeq);
+    public int getPay(@PathVariable Long userId) {
+        return payService.getPay(userId);
     }
 
     @PostMapping("/{userId}/chargePay")
     @Operation(summary = "잔액 충전", description = "유저의 잔액을 충전합니다.")
-    public UserEntity chargePay(@Parameter(description = "잔액을 충전할 유저의 ID") @PathVariable Long userSeq, @Parameter(description = "충전할 금액") @RequestParam int amount) {
-        return payService.chargePay(userSeq, amount);
+    public UserEntity chargePay(@PathVariable Long userId, @RequestParam int amount) {
+        return payService.chargePay(userId, amount);
     }
 
 }

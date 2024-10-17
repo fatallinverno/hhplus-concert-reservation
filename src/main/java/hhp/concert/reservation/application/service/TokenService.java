@@ -30,11 +30,11 @@ public class TokenService {
     @Autowired
     private TokenRepository tokenRepository;
 
-    public TokenEntity generateToken(Long userSeq) {
-        UserEntity user = userRepository.findById(userSeq)
+    public TokenEntity generateToken(Long userId) {
+        UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
-        Optional<TokenEntity> existingTokenOpt = tokenRepository.findByUserEntityUserSeqAndStatus(userSeq, "complete");
+        Optional<TokenEntity> existingTokenOpt = tokenRepository.findByUserEntityUserIdAndStatus(userId, "complete");
 
         if (existingTokenOpt.isPresent()) {
             return refreshToken(existingTokenOpt.get());
@@ -42,7 +42,7 @@ public class TokenService {
 
         TokenEntity token = new TokenEntity();
         token.setUserEntity(user);
-        token.setToken(jwtUtil.generateToken(userSeq, waitingQueue.size() + 1));
+        token.setToken(jwtUtil.generateToken(userId, waitingQueue.size() + 1));
         token.setIssuedAt(LocalDateTime.now());
         token.setExpirationTime(LocalDateTime.now().plusMinutes(5));
         token.setStatus("pending");
@@ -64,7 +64,7 @@ public class TokenService {
     private TokenEntity refreshToken(TokenEntity existingToken) {
         existingToken.setIssuedAt(LocalDateTime.now());
         existingToken.setExpirationTime(LocalDateTime.now().plusMinutes(5));
-        existingToken.setToken(jwtUtil.generateToken(existingToken.getUserEntity().getUserSeq(), existingToken.getQueuePosition()));
+        existingToken.setToken(jwtUtil.generateToken(existingToken.getUserEntity().getUserId(), existingToken.getQueuePosition()));
         existingToken.setStatus("pending");
         return tokenRepository.save(existingToken);
     }
@@ -94,10 +94,10 @@ public class TokenService {
         moveToReadyQueue();
     }
 
-    public int getQueuePosition(Long userSeq) {
+    public int getQueuePosition(Long userId) {
         int position = 1;
         for (TokenEntity token : waitingQueue) {
-            if (token.getUserEntity().getUserSeq().equals(userSeq)) {
+            if (token.getUserEntity().getUserId().equals(userId)) {
                 return position;
             }
             position++;

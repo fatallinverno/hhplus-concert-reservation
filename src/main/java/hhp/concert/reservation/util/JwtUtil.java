@@ -15,9 +15,9 @@ public class JwtUtil {
 
     private final Key secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
 
-    public String generateToken(Long userSeq, int queuePosition) {
+    public String generateToken(Long userId, int queuePosition) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("userSeq", userSeq);
+        claims.put("userId", userId);
         claims.put("queuePosition", queuePosition);
         claims.put("status", "pending");
 
@@ -41,10 +41,10 @@ public class JwtUtil {
         return extractClaims(token).getExpiration().before(new Date());
     }
 
-    public boolean validateToken(String token, Long userSeq) {
+    public boolean validateToken(String token, Long userId) {
         Claims claims = extractClaims(token);
-        Long tokenUserSeq = claims.get("userSeq", Long.class);
-        return (userSeq.equals(tokenUserSeq)) && !isTokenExpired(token);
+        Long tokenUserId = claims.get("userId", Long.class);
+        return (userId.equals(tokenUserId)) && !isTokenExpired(token);
     }
 
 }
