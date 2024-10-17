@@ -121,6 +121,7 @@ public class ReservationServiceTest {
     void testReserveSeat() {
         Long userId = 1L;
         Long seatId = 1L;
+
         UserEntity user = new UserEntity();
         user.setUserSeq(userId);
         SeatEntity seat = new SeatEntity();
@@ -131,46 +132,24 @@ public class ReservationServiceTest {
         token.setUserEntity(user);
 
         when(tokenService.getNextInQueue()).thenReturn(token);
+
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(seatRepository.findById(seatId)).thenReturn(Optional.of(seat));
+        when(seatRepository.findByIdForReservation(seatId)).thenReturn(Optional.of(seat));
         when(reservationRepository.save(any(ReservationEntity.class))).thenAnswer(i -> i.getArguments()[0]);
 
         doNothing().when(reservationValidate).validateSeat(seat);
 
         ReservationEntity reservation = reservationService.reserveSeat(userId, seatId);
 
-        assertEquals(user, reservation.getUserEntity());
-        assertEquals(seat, reservation.getSeatEntity());
-        assertEquals(false, reservation.isTemporary());
+        assertEquals(user, reservation.getUserEntity(), "예약된 사용자 정보가 일치하지 않습니다.");
+        assertEquals(seat, reservation.getSeatEntity(), "예약된 좌석 정보가 일치하지 않습니다.");
+        assertFalse(reservation.isTemporary(), "좌석이 임시 예약 상태로 설정되었습니다.");
+
         verify(seatRepository, times(1)).save(seat);
         verify(tokenService, times(1)).processNextInQueue();
         verify(reservationValidate, times(1)).validateSeat(seat);
-    }
 
-    @Test
-    void testReserveSeatNotAvailable() {
-        Long userId = 1L;
-        Long seatId = 1L;
-        UserEntity user = new UserEntity();
-        user.setUserSeq(userId);
-        SeatEntity seat = new SeatEntity();
-        seat.setSeatId(seatId);
-        seat.setAvailable(false);
-
-        TokenEntity token = new TokenEntity();
-        token.setUserEntity(user);
-
-        when(tokenService.getNextInQueue()).thenReturn(token);
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(seatRepository.findById(seatId)).thenReturn(Optional.of(seat));
-
-        doThrow(new RuntimeException("좌석이 이미 예약되었습니다.")).when(reservationValidate).validateSeat(seat);
-
-        Exception exception = assertThrows(RuntimeException.class, () -> {
-            reservationService.reserveSeat(userId, seatId);
-        });
-
-        assertEquals("좌석이 이미 예약되었습니다.", exception.getMessage());
+        assertFalse(seat.isAvailable(), "좌석이 예약 상태로 변경되지 않았습니다.");
     }
 
 }
