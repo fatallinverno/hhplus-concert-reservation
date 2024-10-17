@@ -1,5 +1,6 @@
 package hhp.concert.reservation.infrastructure.repository;
 
+import hhp.concert.reservation.domain.entity.ConcertEntity;
 import hhp.concert.reservation.domain.entity.ReservationEntity;
 import hhp.concert.reservation.domain.entity.SeatEntity;
 import hhp.concert.reservation.domain.entity.UserEntity;
@@ -15,8 +16,8 @@ public interface ReservationRepository extends JpaRepository<ReservationEntity, 
     @Query("SELECT DISTINCT r.reservationDate FROM ReservationEntity r WHERE r.isTemporary = false AND r.concertEntity.concertId = :concertId")
     List<String> findAvailableDatesByConcert(@Param("concertId") Long concertId);
 
-    @Query("SELECT r.seatEntity.seatNumber FROM ReservationEntity r WHERE r.reservationDate = :date")
-    List<Integer> findReservedSeatNumbersByDate(@Param("date") String date);
+    @Query("SELECT r.seatEntity.seatNumber FROM ReservationEntity r WHERE r.reservationDate = :date AND r.concertEntity.concertId = :concertId")
+    List<Integer> findReservedSeatNumbersByDateAndConcertId(@Param("date") String date, @Param("concertId") Long concertId);
 
-    Optional<ReservationEntity> findByUserEntityAndSeatEntityAndIsTemporary(UserEntity userEntity, SeatEntity seatEntity, boolean isTemporary);
+    Optional<ReservationEntity> findByUserEntityAndConcertEntityAndSeatEntityAndIsTemporary(UserEntity userEntity, ConcertEntity concertEntity, SeatEntity seatEntity, boolean isTemporary);
 }
