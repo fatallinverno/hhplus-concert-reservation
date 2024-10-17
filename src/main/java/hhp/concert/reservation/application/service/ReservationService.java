@@ -65,7 +65,7 @@ public class ReservationService {
 
         return seatRepository.findAll()
                 .stream()
-                .filter(SeatEntity::isAvailable) // 활성화된 좌석만 필터링
+                .filter(SeatEntity::isAvailable)
                 .map(SeatEntity::getSeatNumber)
                 .filter(seatNumber -> !reservedSeats.contains(seatNumber))
                 .collect(Collectors.toList());

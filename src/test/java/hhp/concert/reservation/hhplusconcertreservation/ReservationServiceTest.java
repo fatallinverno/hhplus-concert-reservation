@@ -135,7 +135,6 @@ public class ReservationServiceTest {
         when(seatRepository.findById(seatId)).thenReturn(Optional.of(seat));
         when(reservationRepository.save(any(ReservationEntity.class))).thenAnswer(i -> i.getArguments()[0]);
 
-        // Mock ReservationValidate의 메서드 동작 정의
         doNothing().when(reservationValidate).validateSeat(seat);
 
         ReservationEntity reservation = reservationService.reserveSeat(userId, seatId);
@@ -145,7 +144,7 @@ public class ReservationServiceTest {
         assertEquals(false, reservation.isTemporary());
         verify(seatRepository, times(1)).save(seat);
         verify(tokenService, times(1)).processNextInQueue();
-        verify(reservationValidate, times(1)).validateSeat(seat); // ReservationValidate 호출 확인
+        verify(reservationValidate, times(1)).validateSeat(seat);
     }
 
     @Test
@@ -156,7 +155,7 @@ public class ReservationServiceTest {
         user.setUserSeq(userId);
         SeatEntity seat = new SeatEntity();
         seat.setSeatId(seatId);
-        seat.setAvailable(false); // 이미 예약된 좌석
+        seat.setAvailable(false);
 
         TokenEntity token = new TokenEntity();
         token.setUserEntity(user);
@@ -165,7 +164,6 @@ public class ReservationServiceTest {
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(seatRepository.findById(seatId)).thenReturn(Optional.of(seat));
 
-        // Mock ReservationValidate의 예외 동작 정의
         doThrow(new RuntimeException("좌석이 이미 예약되었습니다.")).when(reservationValidate).validateSeat(seat);
 
         Exception exception = assertThrows(RuntimeException.class, () -> {
