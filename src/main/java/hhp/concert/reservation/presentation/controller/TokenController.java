@@ -16,15 +16,22 @@ public class TokenController {
     @Autowired
     private TokenService tokenService;
 
+    @Autowired
+    private TokenValidate tokenValidate;
+
     @PostMapping("/generate")
     @Operation(summary = "토큰 발급", description = "토큰을 발급합니다.")
-    public TokenEntity generateToken(@RequestParam Long userId) {
+    public TokenEntity generateToken(@RequestParam Long userId, @RequestParam String token) {
+        tokenValidate.validateToken(token, userId);
+
         return tokenService.generateToken(userId);
     }
 
     @GetMapping("/queue/position")
     @Operation(summary = "순번 조회", description = "대기열 순번 조회합니다.")
-    public int getQueuePosition(@RequestParam Long userId) {
+    public int getQueuePosition(@RequestParam Long userId, @RequestParam String token) {
+        tokenValidate.validateToken(token, userId);
+
         return tokenService.getQueuePosition(userId);
     }
 
