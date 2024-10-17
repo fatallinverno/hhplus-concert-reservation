@@ -1,4 +1,4 @@
-##Swagger API
+## Swagger API
 
 ### 대기 순번 조회
 대기 순번 조회는 Queue를 이용하여, waitingQueue(대기열) > ReadyQueue(입장) 로직으로 구현했습니다.
