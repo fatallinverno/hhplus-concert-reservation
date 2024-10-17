@@ -1,4 +1,4 @@
-package hhp.concert.reservation.hhplusconcertreservation;
+package hhp.concert.reservation.hhplusconcertreservation.unit;
 
 import hhp.concert.reservation.application.service.PayService;
 import hhp.concert.reservation.domain.entity.UserEntity;

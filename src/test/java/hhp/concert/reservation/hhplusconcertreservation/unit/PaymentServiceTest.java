@@ -1,4 +1,4 @@
-package hhp.concert.reservation.hhplusconcertreservation;
+package hhp.concert.reservation.hhplusconcertreservation.unit;
 
 import hhp.concert.reservation.application.service.PaymentService;
 import hhp.concert.reservation.application.service.TokenService;
@@ -13,7 +13,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;

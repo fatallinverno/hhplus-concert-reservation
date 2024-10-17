@@ -1,4 +1,4 @@
-package hhp.concert.reservation.hhplusconcertreservation;
+package hhp.concert.reservation.hhplusconcertreservation.unit;
 
 import hhp.concert.reservation.application.service.ConcertService;
 import hhp.concert.reservation.application.service.ReservationService;
