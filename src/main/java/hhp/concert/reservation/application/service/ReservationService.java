@@ -35,9 +35,6 @@ public class ReservationService {
     private UserRepository userRepository;
 
     @Autowired
-    private ConcertRepository concertRepository;
-
-    @Autowired
     private ReservationRepository reservationRepository;
 
     @Autowired
@@ -51,26 +48,6 @@ public class ReservationService {
 
     @Autowired
     private ConcertValidate concertValidate;
-
-    public List<String> findAvailableDatesByConcert(Long concertId) {
-        boolean exists = concertRepository.existsById(concertId);
-        concertValidate.validateConcertId(exists);
-
-        List<String> dateCheck = reservationRepository.findAvailableDatesByConcert(concertId);
-
-        return concertValidate.filterPastDates(dateCheck);
-    }
-
-    public List<Integer> getAvailableSeats(Long concertId, String date) {
-        List<Integer> reservedSeats = reservationRepository.findReservedSeatNumbersByDateAndConcertId(date, concertId);
-
-        return seatRepository.findAll()
-                .stream()
-                .filter(SeatEntity::isAvailable)
-                .filter(seat -> !reservedSeats.contains(seat.getSeatNumber()))
-                .map(SeatEntity::getSeatNumber)
-                .collect(Collectors.toList());
-    }
 
     @Transactional
     public ReservationEntity reserveSeat(Long userId, Long seatId) {

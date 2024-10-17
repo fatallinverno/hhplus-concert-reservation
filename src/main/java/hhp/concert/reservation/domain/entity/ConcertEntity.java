@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -23,7 +24,7 @@ public class ConcertEntity {
     private String concertName;
 
     @Column
-    private String concertDate;
+    private LocalDate concertDate;
 
     @OneToMany
     private List<ReservationEntity> reservations;

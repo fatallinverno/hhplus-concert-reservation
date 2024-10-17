@@ -13,11 +13,5 @@ import java.util.Optional;
 
 public interface ReservationRepository extends JpaRepository<ReservationEntity, Long> {
 
-    @Query("SELECT DISTINCT r.reservationDate FROM ReservationEntity r WHERE r.isTemporary = false AND r.concertEntity.concertId = :concertId")
-    List<String> findAvailableDatesByConcert(@Param("concertId") Long concertId);
-
-    @Query("SELECT r.seatEntity.seatNumber FROM ReservationEntity r WHERE r.reservationDate = :date AND r.concertEntity.concertId = :concertId")
-    List<Integer> findReservedSeatNumbersByDateAndConcertId(@Param("date") String date, @Param("concertId") Long concertId);
-
     Optional<ReservationEntity> findByUserEntityAndConcertEntityAndSeatEntityAndIsTemporary(UserEntity userEntity, ConcertEntity concertEntity, SeatEntity seatEntity, boolean isTemporary);
 }

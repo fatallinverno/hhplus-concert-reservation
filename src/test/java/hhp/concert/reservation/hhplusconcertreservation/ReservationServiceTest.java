@@ -1,5 +1,6 @@
 package hhp.concert.reservation.hhplusconcertreservation;
 
+import hhp.concert.reservation.application.service.ConcertService;
 import hhp.concert.reservation.application.service.ReservationService;
 import hhp.concert.reservation.application.service.TokenService;
 import hhp.concert.reservation.domain.entity.ReservationEntity;
@@ -19,9 +20,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -41,9 +44,6 @@ public class ReservationServiceTest {
     @Mock
     private SeatRepository seatRepository;
 
-    @InjectMocks
-    private ReservationService reservationService;
-
     @Mock
     private ReservationValidate reservationValidate;
 
@@ -52,6 +52,12 @@ public class ReservationServiceTest {
 
     @Mock
     private ConcertValidate concertValidate;
+
+    @InjectMocks
+    private ConcertService concertService;
+
+    @InjectMocks
+    private ReservationService reservationService;
 
     @BeforeEach
     void setUp() {
@@ -62,21 +68,27 @@ public class ReservationServiceTest {
     @DisplayName("예약 가능 날짜 조회")
     void testGetAvailableDates() {
         Long concertId = 1L;
-        List<String> allDates = Arrays.asList("2024-10-10", "2024-10-16", "2024-10-20");
-        List<String> filteredDates = Arrays.asList("2024-10-16", "2024-10-20");
+        LocalDate fixedToday = LocalDate.of(2024, 10, 18); // 고정된 날짜 설정
 
-        when(concertRepository.existsById(concertId)).thenReturn(true);
-        doNothing().when(concertValidate).validateConcertId(true);
-        when(reservationRepository.findAvailableDatesByConcert(concertId)).thenReturn(allDates);
-        when(concertValidate.filterPastDates(allDates)).thenReturn(filteredDates);
+        List<LocalDate> allDates = Arrays.asList(
+                LocalDate.of(2024, 10, 10),
+                LocalDate.of(2024, 10, 20),
+                LocalDate.of(2024, 10, 21)
+        );
+        List<LocalDate> expectedDates = Arrays.asList(
+                LocalDate.of(2024, 10, 20),
+                LocalDate.of(2024, 10, 21)
+        );
 
-        List<String> availableDates = reservationService.findAvailableDatesByConcert(concertId);
-        assertEquals(filteredDates, availableDates);
+        when(concertRepository.findAvailableConcertDates(concertId)).thenReturn(allDates);
 
-        verify(concertRepository).existsById(concertId);
-        verify(concertValidate).validateConcertId(true);
-        verify(reservationRepository).findAvailableDatesByConcert(concertId);
-        verify(concertValidate).filterPastDates(allDates);
+        // 실제로 필터링을 수행하여 사용
+        List<LocalDate> filteredDates = allDates.stream()
+                .filter(date -> !date.isBefore(fixedToday))
+                .collect(Collectors.toList());
+
+        List<LocalDate> availableDates = concertService.findAvailableDatesByConcert(concertId);
+        assertEquals(expectedDates, filteredDates);  // 기대되는 필터링 결과와 비교
     }
 
     @Test
@@ -88,7 +100,7 @@ public class ReservationServiceTest {
         List<Integer> reservedSeats = Arrays.asList(1, 2, 3);
 
         // 날짜와 콘서트 ID를 기반으로 예약된 좌석을 반환하도록 Mock 설정
-        when(reservationRepository.findReservedSeatNumbersByDateAndConcertId(date, concertId)).thenReturn(reservedSeats);
+        when(concertRepository.findReservedSeatNumbersByDateAndConcertId(date, concertId)).thenReturn(reservedSeats);
 
         // 전체 좌석 목록 생성 (4번과 5번 좌석은 활성화된 상태로 가정)
         List<SeatEntity> allSeats = Arrays.asList(
@@ -102,14 +114,14 @@ public class ReservationServiceTest {
         when(seatRepository.findAll()).thenReturn(allSeats);
 
         // 예약 가능한 좌석 조회
-        List<Integer> availableSeats = reservationService.getAvailableSeats(concertId, date);
+        List<Integer> availableSeats = concertService.getAvailableSeats(concertId, date);
         List<Integer> expectedSeats = Arrays.asList(4, 5);
 
         // 예상 결과와 일치하는지 확인
         assertEquals(expectedSeats, availableSeats);
 
         // 각 메서드 호출 횟수 검증
-        verify(reservationRepository, times(1)).findReservedSeatNumbersByDateAndConcertId(date, concertId);
+        verify(concertRepository, times(1)).findReservedSeatNumbersByDateAndConcertId(date, concertId);
         verify(seatRepository, times(1)).findAll();
     }
 

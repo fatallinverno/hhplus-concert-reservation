@@ -17,10 +17,10 @@ public class ConcertValidate {
     }
 
     // 과거 날짜를 필터링하여 현재 날짜 이후의 날짜만 반환하는 메서드
-    public List<String> filterPastDates(List<String> dates) {
+    public List<LocalDate> filterPastDates(List<LocalDate> dates) {
         LocalDate today = LocalDate.now();
         return dates.stream()
-                .filter(date -> LocalDate.parse(date).isAfter(today) || LocalDate.parse(date).isEqual(today))
+                .filter(date -> !date.isBefore(today)) // 오늘 이후의 날짜만 포함
                 .collect(Collectors.toList());
     }
 
