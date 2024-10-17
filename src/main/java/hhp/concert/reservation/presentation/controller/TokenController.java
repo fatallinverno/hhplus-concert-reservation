@@ -22,8 +22,6 @@ public class TokenController {
     @PostMapping("/generate")
     @Operation(summary = "토큰 발급", description = "토큰을 발급합니다.")
     public TokenEntity generateToken(@RequestParam Long userId, @RequestParam String token) {
-        tokenValidate.validateToken(token, userId);
-
         return tokenService.generateToken(userId);
     }
 
