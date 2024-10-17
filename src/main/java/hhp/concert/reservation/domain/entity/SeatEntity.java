@@ -3,9 +3,10 @@ package hhp.concert.reservation.domain.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
+import lombok.Setter;
 
+@Data
 @Entity
-@Getter
 @Table(name = "seat")
 public class SeatEntity {
 

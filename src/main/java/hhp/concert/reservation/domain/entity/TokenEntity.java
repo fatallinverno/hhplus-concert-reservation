@@ -7,9 +7,8 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
+@Data
 @Entity
-@Getter
-@Setter
 @Table(name = "token")
 public class TokenEntity {
 
