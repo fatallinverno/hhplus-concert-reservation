@@ -1,13 +1,9 @@
 package hhp.concert.reservation.hhplusconcertreservation;
 
 import hhp.concert.reservation.application.service.PaymentService;
-import hhp.concert.reservation.domain.entity.PaymentEntity;
-import hhp.concert.reservation.domain.entity.SeatEntity;
-import hhp.concert.reservation.domain.entity.UserEntity;
-import hhp.concert.reservation.infrastructure.repository.PaymentRepository;
-import hhp.concert.reservation.infrastructure.repository.SeatRepository;
-import hhp.concert.reservation.infrastructure.repository.UserRepository;
-import hhp.concert.reservation.util.JwtUtil;
+import hhp.concert.reservation.application.service.TokenService;
+import hhp.concert.reservation.domain.entity.*;
+import hhp.concert.reservation.infrastructure.repository.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,7 +12,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.time.LocalDateTime;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class PaymentServiceTest {
@@ -31,7 +30,13 @@ public class PaymentServiceTest {
     private PaymentRepository paymentRepository;
 
     @Mock
-    private JwtUtil jwtUtil;
+    private TokenRepository tokenRepository;
+
+    @Mock
+    private ReservationRepository reservationRepository;
+
+    @Mock
+    private TokenService tokenService;
 
     @InjectMocks
     private PaymentService paymentService;
@@ -42,7 +47,7 @@ public class PaymentServiceTest {
     }
 
     @Test
-    @DisplayName("결재")
+    @DisplayName("결제 처리 후 결제 내역 생성 및 토큰 만료")
     void testProcessPayment() {
         Long userId = 1L;
         Long seatId = 1L;
@@ -51,32 +56,45 @@ public class PaymentServiceTest {
 
         UserEntity user = new UserEntity();
         user.setUserSeq(userId);
-        user.setUserId("test");
+        user.setUserId("testUser");
 
         SeatEntity seat = new SeatEntity();
         seat.setSeatId(seatId);
         seat.setSeatNumber(10);
         seat.setAvailable(true);
 
-        when(userRepository.findById(userId)).thenReturn(java.util.Optional.of(user));
-        when(seatRepository.findById(seatId)).thenReturn(java.util.Optional.of(seat));
-//        doNothing().when(jwtUtil).expirationToken(token);
+        TokenEntity tokenEntity = new TokenEntity();
+        tokenEntity.setToken(token);
+        tokenEntity.setUserEntity(user);
+        tokenEntity.setStatus("pending");
+
+        ReservationEntity reservation = new ReservationEntity();
+        reservation.setReservationId(1L);
+        reservation.setUserEntity(user);
+        reservation.setSeatEntity(seat);
+        reservation.setTemporary(true);
+        reservation.setExpirationTime(LocalDateTime.now().minusMinutes(1));
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(seatRepository.findById(seatId)).thenReturn(Optional.of(seat));
+        when(tokenRepository.findByToken(token)).thenReturn(Optional.of(tokenEntity));
+        when(reservationRepository.findByUserEntityAndSeatEntityAndTemporary(user, seat, true))
+                .thenReturn(Optional.of(reservation));
 
         paymentService.processPayment(userId, seatId, amount, token);
 
-        ArgumentCaptor<PaymentEntity> captor = ArgumentCaptor.forClass(PaymentEntity.class);
-        verify(paymentRepository).save(captor.capture());
+        ArgumentCaptor<PaymentEntity> paymentCaptor = ArgumentCaptor.forClass(PaymentEntity.class);
+        verify(paymentRepository).save(paymentCaptor.capture());
 
-        PaymentEntity savedPayment = captor.getValue();
+        PaymentEntity savedPayment = paymentCaptor.getValue();
         assertEquals(amount, savedPayment.getAmount());
         assertEquals(user, savedPayment.getUser());
         assertEquals(seat, savedPayment.getSeat());
         assertEquals(PaymentEntity.PaymentStatus.COMPLETED, savedPayment.getPaymentStatus());
 
-        verify(userRepository).findById(userId);
-        verify(seatRepository).findById(seatId);
+        assertFalse(seat.isAvailable());
         verify(seatRepository).save(seat);
-//        verify(jwtUtil).expirationToken(token);
+        verify(tokenService).completeToken(tokenEntity.getTokenId());
     }
 
 }
