@@ -82,29 +82,34 @@ public class ReservationServiceTest {
     @Test
     @DisplayName("예약 가능 좌석 조회")
     void testGetAvailableSeats() {
+        Long concertId = 1L;
         Long seatId = 1L;
-        String date = "2023-10-17";
+        String date = "2023-10-20";
         List<Integer> reservedSeats = Arrays.asList(1, 2, 3);
 
-        when(reservationRepository.findReservedSeatNumbersByDate(date)).thenReturn(reservedSeats);
+        // 날짜와 콘서트 ID를 기반으로 예약된 좌석을 반환하도록 Mock 설정
+        when(reservationRepository.findReservedSeatNumbersByDateAndConcertId(date, concertId)).thenReturn(reservedSeats);
 
         // 전체 좌석 목록 생성 (4번과 5번 좌석은 활성화된 상태로 가정)
         List<SeatEntity> allSeats = Arrays.asList(
-                createSeatEntity(seatId, 1, false),
-                createSeatEntity(seatId, 2, false),
-                createSeatEntity(seatId, 3, false),
-                createSeatEntity(seatId + 1, 4, true),
-                createSeatEntity(seatId + 2, 5, true)
+                createSeatEntity(seatId, 1, false),  // 예약된 좌석
+                createSeatEntity(seatId + 1, 2, false),  // 예약된 좌석
+                createSeatEntity(seatId + 2, 3, false),  // 예약된 좌석
+                createSeatEntity(seatId + 3, 4, true),  // 활성화된 좌석
+                createSeatEntity(seatId + 4, 5, true)  // 활성화된 좌석
         );
 
         when(seatRepository.findAll()).thenReturn(allSeats);
 
-        List<Integer> availableSeats = reservationService.getAvailableSeats(date);
+        // 예약 가능한 좌석 조회
+        List<Integer> availableSeats = reservationService.getAvailableSeats(concertId, date);
         List<Integer> expectedSeats = Arrays.asList(4, 5);
 
-                assertEquals(expectedSeats, availableSeats);
+        // 예상 결과와 일치하는지 확인
+        assertEquals(expectedSeats, availableSeats);
 
-        verify(reservationRepository, times(1)).findReservedSeatNumbersByDate(date);
+        // 각 메서드 호출 횟수 검증
+        verify(reservationRepository, times(1)).findReservedSeatNumbersByDateAndConcertId(date, concertId);
         verify(seatRepository, times(1)).findAll();
     }
 
@@ -123,7 +128,7 @@ public class ReservationServiceTest {
         Long seatId = 1L;
 
         UserEntity user = new UserEntity();
-        user.setUserSeq(userId);
+        user.setUserId(userId);
         SeatEntity seat = new SeatEntity();
         seat.setSeatId(seatId);
         seat.setAvailable(true);

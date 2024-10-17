@@ -46,11 +46,11 @@ public class ReservationService {
     @Autowired
     private TokenService tokenService;
 
+    @Autowired
     private ReservationValidate reservationValidate;
 
+    @Autowired
     private ConcertValidate concertValidate;
-
-    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
     public List<String> findAvailableDatesByConcert(Long concertId) {
         boolean exists = concertRepository.existsById(concertId);
@@ -61,14 +61,14 @@ public class ReservationService {
         return concertValidate.filterPastDates(dateCheck);
     }
 
-    public List<Integer> getAvailableSeats(String date) {
-        List<Integer> reservedSeats = reservationRepository.findReservedSeatNumbersByDate(date);
+    public List<Integer> getAvailableSeats(Long concertId, String date) {
+        List<Integer> reservedSeats = reservationRepository.findReservedSeatNumbersByDateAndConcertId(date, concertId);
 
         return seatRepository.findAll()
                 .stream()
                 .filter(SeatEntity::isAvailable)
+                .filter(seat -> !reservedSeats.contains(seat.getSeatNumber()))
                 .map(SeatEntity::getSeatNumber)
-                .filter(seatNumber -> !reservedSeats.contains(seatNumber))
                 .collect(Collectors.toList());
     }
 
@@ -76,7 +76,7 @@ public class ReservationService {
     public ReservationEntity reserveSeat(Long userId, Long seatId) {
         // 다음 대기 사용자를 확인하여 예약 진행 차례가 맞는지 확인
         TokenEntity nextUserToken = tokenService.getNextInQueue();
-        if (nextUserToken == null || !nextUserToken.getUserEntity().getUserSeq().equals(userId)) {
+        if (nextUserToken == null || !nextUserToken.getUserEntity().getUserId().equals(userId)) {
             throw new RuntimeException("현재 예약을 진행할 차례가 아닙니다.");
         }
 
