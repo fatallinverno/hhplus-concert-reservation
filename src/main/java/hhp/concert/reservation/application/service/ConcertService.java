@@ -4,10 +4,12 @@ import hhp.concert.reservation.domain.entity.SeatEntity;
 import hhp.concert.reservation.infrastructure.repository.ConcertRepository;
 import hhp.concert.reservation.infrastructure.repository.SeatRepository;
 import hhp.concert.reservation.validate.ConcertValidate;
+import hhp.concert.reservation.validate.TokenValidate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,19 +22,24 @@ public class ConcertService {
     @Autowired
     private SeatRepository seatRepository;
 
+    @Autowired
     private ConcertValidate concertValidate;
+
+    @Autowired
+    private TokenValidate tokenValidate;
 
     public List<LocalDate> findAvailableDatesByConcert(Long concertId) {
         boolean exists = concertRepository.existsById(concertId);
         concertValidate.validateConcertId(exists);
 
-        List<LocalDate> availableDates = concertRepository.findAvailableConcertDates(concertId);
-
-        return availableDates;
+        return concertRepository.findAvailableConcertDates(concertId);
     }
 
     public List<Integer> getAvailableSeats(Long concertId, String date) {
-        List<Integer> reservedSeats = concertRepository.findReservedSeatNumbersByDateAndConcertId(date, concertId);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate localDate = LocalDate.parse(date, formatter);
+
+        List<Integer> reservedSeats = concertRepository.findReservedSeatNumbersByDateAndConcertId(localDate, concertId);
 
         return seatRepository.findAll()
                 .stream()

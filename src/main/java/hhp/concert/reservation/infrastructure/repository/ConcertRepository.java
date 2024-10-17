@@ -15,5 +15,5 @@ public interface ConcertRepository extends JpaRepository<ConcertEntity, Long> {
     List<LocalDate> findAvailableConcertDates(@Param("concertId") Long concertId);
 
     @Query("SELECT r.seatEntity.seatNumber FROM ReservationEntity r WHERE r.reservationDate = :date AND r.concertEntity.concertId = :concertId")
-    List<Integer> findReservedSeatNumbersByDateAndConcertId(@Param("date") String date, @Param("concertId") Long concertId);
+    List<Integer> findReservedSeatNumbersByDateAndConcertId(@Param("date") LocalDate date, @Param("concertId") Long concertId);
 }
