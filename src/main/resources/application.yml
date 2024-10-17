@@ -2,9 +2,6 @@ spring:
   application:
     name: hhplus-concert-reservation
 
-server:
-  port: 8888
-
 # Swagger springdoc-ui Configuration
 springdoc:
   packages-to-scan: hhp.concert.reservation
