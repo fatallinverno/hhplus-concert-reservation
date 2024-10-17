@@ -22,13 +22,4 @@ public class UserEntity {
     @Column(nullable = false)
     private int pay;
 
-    @OneToMany(mappedBy = "userEntity")
-    private List<TokenEntity> tokens;
-
-    @OneToMany(mappedBy = "userEntity")
-    private List<ReservationEntity> reservationEntities;
-
-    @OneToMany(mappedBy = "userEntity")
-    private List<PaymentEntity> paymentEntities;
-
 }
