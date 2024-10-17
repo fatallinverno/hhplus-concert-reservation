@@ -18,6 +18,9 @@ public class SeatEntity {
     private int seatNumber;
 
     @Column
+    private Long reservationId;
+
+    @Column
     private boolean isAvailable;
 
 }
