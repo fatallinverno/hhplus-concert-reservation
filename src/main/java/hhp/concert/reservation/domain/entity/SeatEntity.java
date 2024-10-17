@@ -20,10 +20,4 @@ public class SeatEntity {
     @Column
     private boolean isAvailable;
 
-    public SeatEntity() {}
-
-    public SeatEntity(Long seatId) {
-        this.seatId = seatId;
-    }
-
 }
