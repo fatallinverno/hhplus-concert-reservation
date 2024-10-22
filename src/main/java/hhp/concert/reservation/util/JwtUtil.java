@@ -1,5 +1,8 @@
 package hhp.concert.reservation.util;
 
+import hhp.concert.reservation.application.service.TokenService;
+import hhp.concert.reservation.domain.entity.TokenEntity;
+import hhp.concert.reservation.infrastructure.repository.TokenRepository;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
@@ -14,6 +17,13 @@ import java.util.UUID;
 public class JwtUtil {
 
     private final Key secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    private final TokenService tokenService;
+    private final TokenRepository tokenRepository;
+
+    public JwtUtil(TokenService tokenService, TokenRepository tokenRepository) {
+        this.tokenService = tokenService;
+        this.tokenRepository = tokenRepository;
+    }
 
     public String generateToken(Long userId, int queuePosition) {
         Map<String, Object> claims = new HashMap<>();
@@ -44,6 +54,18 @@ public class JwtUtil {
     public boolean validateToken(String token, Long userId) {
         Claims claims = extractClaims(token);
         Long tokenUserId = claims.get("userId", Long.class);
+
+        if(isTokenExpired(token)) {
+            throw new IllegalArgumentException("토큰이 만료 되었습니다.");
+        }
+
+        TokenEntity tokenEntity = tokenRepository.findByToken(token)
+                .orElseThrow(() -> new RuntimeException("유효하지 않은 토큰입니다."));
+
+        if ("COMPLETE".equals(tokenEntity.getStatus())) {
+            throw new IllegalArgumentException("토큰이 이미 사용되었습니다.");
+        }
+
         return (userId.equals(tokenUserId)) && !isTokenExpired(token);
     }
 
