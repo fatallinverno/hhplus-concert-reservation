@@ -5,6 +5,7 @@ import hhp.concert.reservation.domain.entity.TokenEntity;
 import hhp.concert.reservation.infrastructure.repository.TokenRepository;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
@@ -17,11 +18,11 @@ import java.util.UUID;
 public class JwtUtil {
 
     private final Key secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
-    private final TokenService tokenService;
+
+    @Autowired
     private final TokenRepository tokenRepository;
 
-    public JwtUtil(TokenService tokenService, TokenRepository tokenRepository) {
-        this.tokenService = tokenService;
+    public JwtUtil(TokenRepository tokenRepository) {
         this.tokenRepository = tokenRepository;
     }
 
