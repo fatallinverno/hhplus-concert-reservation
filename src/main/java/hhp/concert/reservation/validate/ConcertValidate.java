@@ -20,7 +20,7 @@ public class ConcertValidate {
     public List<LocalDate> filterPastDates(List<LocalDate> dates) {
         LocalDate today = LocalDate.now();
         return dates.stream()
-                .filter(date -> !date.isBefore(today)) // 오늘 이후의 날짜만 포함
+                .filter(date -> !date.isBefore(today))
                 .collect(Collectors.toList());
     }
 

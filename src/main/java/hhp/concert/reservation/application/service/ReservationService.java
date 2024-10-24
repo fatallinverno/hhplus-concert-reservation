@@ -4,32 +4,18 @@ import hhp.concert.reservation.domain.entity.ReservationEntity;
 import hhp.concert.reservation.domain.entity.SeatEntity;
 import hhp.concert.reservation.domain.entity.TokenEntity;
 import hhp.concert.reservation.domain.entity.UserEntity;
-import hhp.concert.reservation.infrastructure.repository.ConcertRepository;
 import hhp.concert.reservation.infrastructure.repository.ReservationRepository;
 import hhp.concert.reservation.infrastructure.repository.SeatRepository;
 import hhp.concert.reservation.infrastructure.repository.UserRepository;
-import hhp.concert.reservation.util.JwtUtil;
-import hhp.concert.reservation.validate.ConcertValidate;
 import hhp.concert.reservation.validate.ReservationValidate;
-import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 @Service
 public class ReservationService {
-
-    @Autowired
-    private JwtUtil jwtUtil;
 
     @Autowired
     private UserRepository userRepository;
@@ -46,10 +32,6 @@ public class ReservationService {
     @Autowired
     private ReservationValidate reservationValidate;
 
-    @Autowired
-    private ConcertValidate concertValidate;
-
-    @Transactional
     public ReservationEntity reserveSeat(Long userId, Long seatId) {
         // 다음 대기 사용자를 확인하여 예약 진행 차례가 맞는지 확인
         TokenEntity nextUserToken = tokenService.getNextInQueue();
